@@ -22,6 +22,26 @@ const map = new google.maps.Map(document.getElementById('map'), {
   center: startPoint
 });
 
+  // Punkt startowy - Leroy Merlin
+const startPoint = { "lat":50.81562701491546,"lng": 16.27033305958717};
+const startMarker = new google.maps.Marker({
+  position: startPoint,
+  map: map,
+  label: { text: "Start", color: "white", fontWeight: "bold" },
+  icon: {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: 16,
+    fillColor: "blue",
+    fillOpacity: 1,
+    strokeWeight: 2,
+    strokeColor: "white"
+  }
+});
+const startInfo = new google.maps.InfoWindow({
+  content: "<b>Leroy Merlin Szczawno-Zdrój</b>"
+});
+startMarker.addListener('click', () => startInfo.open(map, startMarker));
+  
 const locations = [
   {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
   {"name":"Bronówek","lat":50.9064906,"lng":16.2219214,"min":22},
@@ -147,3 +167,4 @@ createMarkers();
 </script>
 </body>
 </html>
+
