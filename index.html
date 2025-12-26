@@ -6,24 +6,24 @@
   
 <title>Mapa Miejscowości</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-    }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
 
+  #map {
+    width: 100%;
+    height: 100vh; /* 100% wysokości ekranu telefonu/desktopu */
+  }
+
+  @media (max-width: 600px) {
     #map {
-      width: 100%;
-      height: 500px; /* wysokość na desktopie */
+      height: 100vh; /* wciąż pełny ekran na telefonach */
     }
-
-    @media (max-width: 600px) {
-      #map {
-        height: 300px; /* mniejsza mapa na telefonach */
-      }
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
 <div id="input-container">
@@ -175,5 +175,6 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 </script>
 </body>
 </html>
+
 
 
