@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+
+<!-- 🔥 KLUCZOWE POD TELEFON -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Mapa Miejscowości</title>
+
+
+</head>
+
+<body>
+
+<div id="input-container">
+  Filtruj litery (np. B,D,K):
+  <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
+</div>
+
+<div id="map"></div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpfag3U0jH6xExZSZtz-YRWqSDa5MsfYE"></script>
+
+<script>
+const mapCenter = {lat: 50.7415, lng: 16.1553};
+const map = new google.maps.Map(document.getElementById('map'), {
+  zoom: window.innerWidth < 600 ? 12 : 11, // 🔥 lepszy zoom na telefonie
+  center: mapCenter,
+  gestureHandling: "greedy" // 🔥 lepsze scrollowanie palcem
+});
+
+// Punkt startowy - Leroy Merlin
+const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
+const startMarker = new google.maps.Marker({
+  position: startPoint,
+  map: map,
+  label: { text: "START", color: "white", fontWeight: "bold" },
+  icon: {
+    path: google.maps.SymbolPath.CIRCLE,
+    scale: 16,
+    fillColor: "blue",
+    fillOpacity: 1,
+    strokeWeight: 2,
+    strokeColor: "white"
+  }
+});
+const startInfo = new google.maps.InfoWindow({
+  content: "<b>Leroy Merlin Szczawno-Zdrój</b>"
+});
+startMarker.addListener('click', () => startInfo.open(map, startMarker));
+
+// ====== RESZTA KODU BEZ ZMIAN ======
+const locations = [
+  {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
+  {"name":"Bronówek","lat":50.9064906,"lng":16.2219214,"min":22},
+  {"name":"Burkatów","lat":50.7923276,"lng":16.4670642,"min":23},
+  {"name":"Bolków","lat":50.92449999999999,"lng":16.10378,"min":28},
+  {"name":"Bolkowice","lat":50.9935743,"lng":16.1953672,"min":33},
+  {"name":"Chwaliszów","lat":50.8580439,"lng":16.2235428,"min":12},
+  {"name":"Czarny Bór","lat":50.7716843,"lng":16.130063,"min":17},
+  {"name":"Cieszów","lat":50.8668723,"lng":16.2607841,"min":18},
+  {"name":"Dziecmorowice","lat":50.768593,"lng":16.3499805,"min":16},
+  {"name":"Dębrznik","lat":50.8120015,"lng":16.0413309,"min":28},
+  {"name":"Domanów","lat":50.8664436,"lng":16.061815,"min":33},
+  {"name":"Gostków","lat":50.84122139999999,"lng":16.1076669,"min":20},
+  {"name":"Grzędy","lat":50.7446382,"lng":16.1383339,"min":21},
+  {"name":"Granica","lat":50.930123187626684,"lng":16.307856935205955,"min":26},
+  {"name":"Gluszyca","lat":50.68728,"lng":16.37107,"min":30},
+  {"name":"Golinsk","lat":50.6475182,"lng":16.1997391,"min":30},
+  {"name":"Jablow","lat":50.7852988,"lng":16.1640059,"min":13},
+  {"name":"Jedlina-Zdrój","lat":50.7252382,"lng":16.3461015,"min":23},
+  {"name":"Jugowice","lat":50.7214919,"lng":16.4023896,"min":24},
+  {"name":"Jakubów","lat":50.818444549200265,"lng":16.502555022507817,"min":26},
+  {"name":"Kamienna Góra","lat":50.7852076,"lng":16.0237177,"min":27},
+  {"name":"Krzeszów","lat":50.7333738,"lng":16.070745,"min":27},
+  {"name":"Krzeszówek","lat":50.7161683,"lng":16.0916809,"min":30},
+  {"name":"Komorów","lat":50.84531484436614,"lng":16.416754661896217,"min":19},
+  {"name":"Kolce","lat":50.665081,"lng":16.4021235,"min":44},
+  {"name":"Kowalowa","lat":50.68265171059332,"lng":16.20339262337273,"min":24},
+  {"name":"Lubomin","lat":50.805072,"lng":16.2050047,"min":8},
+  {"name":"Lubachów","lat":50.7680484,"lng":16.433307,"min":21},
+  {"name":"Lutomia Górna","lat":50.7519253,"lng":16.5254117,"min":29},
+  {"name":"Lutomia Dolna","lat":50.7573784,"lng":16.5371223,"min":31},
+  {"name":"Lipienica","lat":50.72011089999999,"lng":16.0486238,"min":31},
+  {"name":"Mokrzeszów","lat":50.8523182,"lng":16.371938,"min":14},
+  {"name":"Milikowice","lat":50.8675912,"lng":16.410211,"min":18},
+  {"name":"Modliszów","lat":50.7930273,"lng":16.393433,"min":24},
+  {"name":"Makowice","lat":50.8062243,"lng":16.5083852,"min":28},
+  {"name":"Marciszów","lat":50.84140375656991,"lng":16.036899492735273,"min":29},
+  {"name":"Michalkowa","lat":50.737853,"lng":16.4510094,"min":31},
+  {"name":"Nowy Julianów","lat":50.7802625,"lng":16.3387494,"min":13},
+  {"name":"Nowe Bogaczewice","lat":50.8394319,"lng":16.1338885,"min":17},
+  {"name":"Niedzwiedzica","lat":50.7394201,"lng":16.3905156,"min":21},
+  {"name":"Olszyniec","lat":50.7298878,"lng":16.3701447,"min":20},
+  {"name":"Olszany","lat":50.91204020000001,"lng":16.3290698,"min":26},
+  {"name":"Opoczka","lat":50.79775309999999,"lng":16.5015326,"min":27},
+  {"name":"Pogorzała","lat":50.805471,"lng":16.3658487,"min":14},
+  {"name":"Podlesie","lat":50.73886668708805,"lng":16.35806204027157,"min":18},
+  {"name":"Pietrzyków","lat":50.89447209040212,"lng":16.218543878091534,"min":19},
+  {"name":"Ptaszków","lat":50.7927741,"lng":16.0406965,"min":26},
+  {"name":"Przedwojów","lat":50.7548233,"lng":16.0156476,"min":32},
+  {"name":"Rogoźnica","lat":51.0000046,"lng":16.2933659,"min":36},
+  {"name":"Rybnica Leśna","lat":50.7006694,"lng":16.2786536,"min":20},
+  {"name":"Rosciszów","lat":50.7084561,"lng":16.5481989,"min":38},
+  {"name":"Raszów","lat":50.8048864,"lng":15.9805648,"min":35},
+  {"name":"Szczawno-Zdrój","lat":50.810462,"lng":16.247897,"min":0},
+  {"name":"Struga","lat":50.8232204,"lng":16.2267887,"min":6},
+  {"name":"Siodlkowice","lat":50.894619374115855,"lng":16.261638857421374,"min":18},
+  {"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322,"min":26},
+  {"name":"Tomkowa","lat":50.8771569,"lng":16.4594463,"min":23},
+  {"name":"Tarnawa","lat":50.96468037787958,"lng":16.548344091043692,"min":35},
+  {"name":"Tomkowice","lat":50.9412972,"lng":16.2937621,"min":28},
+  {"name":"Tuszyn","lat":50.796290161261076,"lng":16.648889865299974,"min":43},
+  {"name":"Unislaw Slaski","lat":50.7128007,"lng":16.2383277,"min":19},
+  {"name":"Witoszów Górny","lat":50.8163029,"lng":16.3863663,"min":17},
+  {"name":"Witoszów Dolny","lat":50.8241697,"lng":16.4285465,"min":19},
+  {"name":"Witków","lat":50.79786679999999,"lng":16.1299111,"min":21},
+  {"name":"Walim","lat":50.6974362,"lng":16.4422202,"min":30},
+  {"name":"Zagórze Śląskie","lat":50.758871,"lng":16.4013558,"min":24},
+  {"name":"Zawiszów","lat":50.8703999,"lng":16.4875682,"min":25}
+];
+
+let markers = [];
+
+function createMarkers() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+
+  const input = document.getElementById('letterInput').value
+    .toUpperCase()
+    .split(',')
+    .map(s => s.trim());
+
+  locations.forEach(loc => {
+    const firstLetter = loc.name.charAt(0).toUpperCase();
+    if (input[0] && !input.includes(firstLetter)) return;
+
+    const marker = new google.maps.Marker({
+      position: {lat: loc.lat, lng: loc.lng},
+      map: map,
+      label: { text: firstLetter, color: "white", fontWeight: "bold" },
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 16,
+        fillColor: "red",
+        fillOpacity: 1,
+        strokeWeight: 2,
+        strokeColor: "white"
+      }
+    });
+
+    const infowindow = new google.maps.InfoWindow({
+      content: `<b>${loc.name}</b><br>${loc.min} min`
+    });
+
+    marker.addListener('click', () => infowindow.open(map, marker));
+    markers.push(marker);
+  });
+}
+
+createMarkers();
+document.getElementById('letterInput').addEventListener('input', createMarkers);
+</script>
+
+</body>
+</html>
