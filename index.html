@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- 馃敟 KLUCZOWE POD TELEFON -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Mapa Miejscowo艣ci</title>
 
@@ -25,9 +23,9 @@
 <script>
 const mapCenter = {lat: 50.7415, lng: 16.1553};
 const map = new google.maps.Map(document.getElementById('map'), {
-  zoom: window.innerWidth < 600 ? 12 : 11, // 馃敟 lepszy zoom na telefonie
+ 
   center: mapCenter,
-  gestureHandling: "greedy" // 馃敟 lepsze scrollowanie palcem
+
 });
 
 // Punkt startowy - Leroy Merlin
@@ -50,7 +48,7 @@ const startInfo = new google.maps.InfoWindow({
 });
 startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
-// ====== RESZTA KODU BEZ ZMIAN ======
+
 const locations = [
   {"name":"Bogusz贸w Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
   {"name":"Bron贸wek","lat":50.9064906,"lng":16.2219214,"min":22},
@@ -165,3 +163,4 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 </body>
 </html>
+
