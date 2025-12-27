@@ -12,13 +12,9 @@
   #input-container {
     margin: 10px;
   }
-  #greenRoute {
+  #bestRouteContainer {
     margin: 10px;
     font-weight: bold;
-  }
-  #routeBtn {
-    margin-left: 10px;
-    padding: 5px 10px;
   }
 </style>
 </head>
@@ -28,14 +24,13 @@
 <div id="input-container">
   Filtruj litery (np. B,D,K):
   <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
-  <button id="routeBtn">TRASA</button>
+  <button id="showRoute">TRASA</button>
 </div>
 
-<div id="greenRoute"></div>
+<div id="bestRouteContainer"></div>
 <div id="map"></div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn7fow-jhcIvU8wCHJaCzQcRdqR9-hRWU"></script>
-
+<script src="https://maps.googleapis.com/maps/api/js?key=TWÓJ_KLUCZ_API_TUTAJ"></script>
 <script>
 const mapCenter = {lat: 50.7415, lng: 16.1553};
 const map = new google.maps.Map(document.getElementById('map'), {
@@ -44,6 +39,7 @@ const map = new google.maps.Map(document.getElementById('map'), {
   gestureHandling: "greedy"
 });
 
+// Punkt startowy
 const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
 const startMarker = new google.maps.Marker({
   position: startPoint,
@@ -58,12 +54,14 @@ const startMarker = new google.maps.Marker({
     strokeColor: "white"
   }
 });
-
-const startInfo = new google.maps.InfoWindow({ content: "<b>Leroy Merlin Szczawno-Zdrój</b>" });
+const startInfo = new google.maps.InfoWindow({
+  content: "<b>Leroy Merlin Szczawno-Zdrój</b>"
+});
 startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
+// Lista miejscowości
 const locations = [
- {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
+  {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
   {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
   {"name":"Bronówek","lat":50.9064906,"lng":16.2219214,"min":22},
   {"name":"Burkatów","lat":50.7923276,"lng":16.4670642,"min":23},
@@ -129,7 +127,7 @@ const locations = [
   {"name":"Stare Bogaczewice","lat":50.84777060021518,"lng":16.20124010317787,"min":9},
   {"name":"Siodlkowice","lat":50.894619374115855,"lng": 16.261638857421374,"min":18},
   {"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322,"min":26},
-  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37},
+  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37}
   {"name":"Tomkowa","lat":50.8771569,"lng":16.4594463,"min":23},
   {"name":"Tarnawa","lat":50.96468037787958,"lng": 16.548344091043692,"min":35},
   {"name":"Tomkowice","lat":50.9412972,"lng":16.2937621,"min":28},
@@ -145,13 +143,8 @@ const locations = [
 
 let markers = [];
 
-function distance(lat1, lng1, lat2, lng2) {
-  const dLat = lat2 - lat1;
-  const dLng = lng2 - lng1;
-  return Math.sqrt(dLat*dLat + dLng*dLng);
-}
-
 function createMarkers() {
+  // usuwamy stare markery
   markers.forEach(m => m.setMap(null));
   markers = [];
 
@@ -171,7 +164,7 @@ function createMarkers() {
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
-    if(input.length && !input.includes(firstLetter)) return;
+    if(input.length && !input.includes(firstLetter)) return; // pomijamy resztę
 
     const isMin = minByLetter[firstLetter] !== undefined && loc.min === minByLetter[firstLetter];
 
@@ -189,13 +182,27 @@ function createMarkers() {
       }
     });
 
-    const infowindow = new google.maps.InfoWindow({ content: `<b>${loc.name}</b><br>${loc.min} min` });
+    const infowindow = new google.maps.InfoWindow({
+      content: `<b>${loc.name}</b><br>${loc.min} min`
+    });
+
     marker.addListener('click', () => infowindow.open(map, marker));
     markers.push(marker);
   });
 }
 
-function showRouteText() {
+createMarkers();
+document.getElementById('letterInput').addEventListener('input', createMarkers);
+
+// funkcja licząca dystans (prosta euklidesowa)
+function distance(a,b) {
+  const dx = a.lat - b.lat;
+  const dy = a.lng - b.lng;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+// przycisk TRASA
+document.getElementById('showRoute').addEventListener('click', () => {
   const input = document.getElementById('letterInput').value
     .toUpperCase()
     .split(',')
@@ -215,22 +222,17 @@ function showRouteText() {
     return input.length && input.includes(firstLetter) && loc.min === minByLetter[firstLetter];
   });
 
-  greenLocations.sort((a,b) => distance(startPoint.lat,startPoint.lng,a.lat,a.lng) - distance(startPoint.lat,startPoint.lng,b.lat,b.lng));
+  // sortowanie według odległości od startu
+  greenLocations.sort((a,b) => distance(startPoint,a) - distance(startPoint,b));
 
   if(greenLocations.length) {
-    const routeText = greenLocations.map(l => l.name).join(" -> ");
-    document.getElementById('greenRoute').innerText = routeText;
+    const names = greenLocations.map(loc => loc.name).join(', ');
+    document.getElementById('bestRouteContainer').innerHTML = `Najbliższe miejscowości to: ${names}`;
   } else {
-    document.getElementById('greenRoute').innerText = "";
+    document.getElementById('bestRouteContainer').innerHTML = "";
   }
-}
-
-createMarkers();
-document.getElementById('routeBtn').addEventListener('click', showRouteText);
+});
 </script>
 
 </body>
 </html>
-
-</html>
-
