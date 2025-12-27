@@ -147,14 +147,15 @@ function createMarkers() {
     .split(',')
     .map(s => s.trim());
 
-  // znajdź najmniejszą minutę dla każdej litery wpisanej w input
-const minMap = {};
-input.forEach(letter => {
-  const candidates = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
-  if(candidates.length > 0) {
-    minMap[letter] = Math.min(...candidates.map(c => c.min));
-  }
-});
+  // Obliczamy minimalny min dla każdej litery w input
+  const minMap = {};
+  locations.forEach(loc => {
+    const firstLetter = loc.name.charAt(0).toUpperCase();
+    if(input[0] && !input.includes(firstLetter)) return;
+    if(!minMap[firstLetter] || loc.min < minMap[firstLetter]) {
+      minMap[firstLetter] = loc.min;
+    }
+  });
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
@@ -167,7 +168,7 @@ input.forEach(letter => {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 16,
-        fillColor: fillColor: (loc.min === minMap[firstLetter]) ? "green" : "red",
+        fillColor: (loc.min === minMap[firstLetter]) ? "green" : "red",
         fillOpacity: 1,
         strokeWeight: 2,
         strokeColor: "white"
@@ -189,6 +190,7 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 </body>
 </html>
+
 
 
 
