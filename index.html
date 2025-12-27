@@ -145,11 +145,23 @@ function createMarkers() {
   const input = document.getElementById('letterInput').value
     .toUpperCase()
     .split(',')
-    .map(s => s.trim());
+    .map(s => s.trim())
+    .filter(s => s);
+
+  const minForLetter = {};
+  input.forEach(letter => {
+    const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
+    if(filtered.length > 0) {
+      const minLoc = filtered.reduce((prev, curr) => curr.min < prev.min ? curr : prev);
+      minForLetter[letter] = minLoc.name;
+    }
+  });
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
     if(input[0] && !input.includes(firstLetter)) return;
+
+    const isMin = minForLetter[firstLetter] === loc.name;
 
     const marker = new google.maps.Marker({
       position: {lat: loc.lat, lng: loc.lng},
@@ -158,7 +170,7 @@ function createMarkers() {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 16,
-        fillColor: "red",
+        fillColor: isMin ? "green" : "red",
         fillOpacity: 1,
         strokeWeight: 2,
         strokeColor: "white"
@@ -180,4 +192,3 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 </body>
 </html>
-
