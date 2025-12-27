@@ -146,24 +146,24 @@ function createMarkers() {
     .toUpperCase()
     .split(',')
     .map(s => s.trim())
-    .filter(s => s.length > 0);
+    .filter(s => s); // usuwa puste
 
-  let minMap = {};
-  if(input.length > 0){
-    locations.forEach(loc => {
-      const firstLetter = loc.name.charAt(0).toUpperCase();
-      if(!input.includes(firstLetter)) return;
-      if(!minMap[firstLetter] || loc.min < minMap[firstLetter]) {
-        minMap[firstLetter] = loc.min;
+  // minimalne min dla każdej litery
+  const minByLetter = {};
+  if(input.length) {
+    input.forEach(letter => {
+      const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
+      if(filtered.length) {
+        minByLetter[letter] = Math.min(...filtered.map(l => l.min));
       }
     });
   }
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
-    if(input.length > 0 && !input.includes(firstLetter)) return;
+    if(input.length && !input.includes(firstLetter)) return;
 
-    const isGreen = input.length > 0 && loc.min === minMap[firstLetter];
+    const isMin = minByLetter[firstLetter] !== undefined && loc.min === minByLetter[firstLetter];
 
     const marker = new google.maps.Marker({
       position: {lat: loc.lat, lng: loc.lng},
@@ -172,7 +172,7 @@ function createMarkers() {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 16,
-        fillColor: isGreen ? "green" : "red",
+        fillColor: isMin ? "green" : "red",
         fillOpacity: 1,
         strokeWeight: 2,
         strokeColor: "white"
@@ -194,4 +194,5 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 </body>
 </html>
+
 
