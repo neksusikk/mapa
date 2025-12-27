@@ -16,6 +16,10 @@
     margin: 10px;
     font-weight: bold;
   }
+  #routeBtn {
+    margin-left: 10px;
+    padding: 5px 10px;
+  }
 </style>
 </head>
 
@@ -24,6 +28,7 @@
 <div id="input-container">
   Filtruj litery (np. B,D,K):
   <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
+  <button id="routeBtn">TRASA</button>
 </div>
 
 <div id="greenRoute"></div>
@@ -141,7 +146,6 @@ const locations = [
 let markers = [];
 
 function distance(lat1, lng1, lat2, lng2) {
-  // prosta "ptasia" odległość
   const dLat = lat2 - lat1;
   const dLng = lng2 - lng1;
   return Math.sqrt(dLat*dLat + dLng*dLng);
@@ -189,8 +193,23 @@ function createMarkers() {
     marker.addListener('click', () => infowindow.open(map, marker));
     markers.push(marker);
   });
+}
 
-  // zielone miejscowości w kolejności od startu
+function showRouteText() {
+  const input = document.getElementById('letterInput').value
+    .toUpperCase()
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s);
+
+  const minByLetter = {};
+  if(input.length) {
+    input.forEach(letter => {
+      const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
+      if(filtered.length) minByLetter[letter] = Math.min(...filtered.map(l => l.min));
+    });
+  }
+
   const greenLocations = locations.filter(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
     return input.length && input.includes(firstLetter) && loc.min === minByLetter[firstLetter];
@@ -207,8 +226,11 @@ function createMarkers() {
 }
 
 createMarkers();
-document.getElementById('letterInput').addEventListener('input', createMarkers);
+document.getElementById('routeBtn').addEventListener('click', showRouteText);
 </script>
 
 </body>
 </html>
+
+</html>
+
