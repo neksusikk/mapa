@@ -222,13 +222,17 @@ document.getElementById('showRoute').addEventListener('click', () => {
     }
   });
 
-  const resultText = "Najbliższe miejscowości to: " + Object.values(minByLetter).join(", ");
-  document.getElementById('bestRouteContainer').innerText = resultText;
+  const resultText = "<b>Najbliższe miejscowości:</b> " + Object.values(minByLetter).map(name => {
+  return "<b>" + name.charAt(0) + "</b>" + name.slice(1);
+}).join(", ");
+document.getElementById('bestRouteContainer').innerHTML = resultText;
+
 });
 </script>
 
 </body>
 </html>
+
 
 
 
