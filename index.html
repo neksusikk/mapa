@@ -185,6 +185,7 @@ function createMarkers() {
 }
 
 createMarkers();
+map.setCenter(startPoint);
 document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 // wyświetlenie najbliższych miejscowości
@@ -217,5 +218,6 @@ document.getElementById('showRoute').addEventListener('click', () => {
 
 </body>
 </html>
+
 
 
