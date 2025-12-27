@@ -30,7 +30,8 @@
 <div id="bestRouteContainer"></div>
 <div id="map"></div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=TWÓJ_KLUCZ_API_TUTAJ"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpfag3U0jH6xExZSZtz-YRWqSDa5MsfYE"></script>
+
 <script>
 const mapCenter = {lat: 50.7415, lng: 16.1553};
 const map = new google.maps.Map(document.getElementById('map'), {
@@ -39,7 +40,7 @@ const map = new google.maps.Map(document.getElementById('map'), {
   gestureHandling: "greedy"
 });
 
-// Punkt startowy
+// Punkt startowy - Leroy Merlin
 const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
 const startMarker = new google.maps.Marker({
   position: startPoint,
@@ -61,7 +62,7 @@ startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
 // Lista miejscowości
 const locations = [
-  {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
+ {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
   {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
   {"name":"Bronówek","lat":50.9064906,"lng":16.2219214,"min":22},
   {"name":"Burkatów","lat":50.7923276,"lng":16.4670642,"min":23},
@@ -144,7 +145,6 @@ const locations = [
 let markers = [];
 
 function createMarkers() {
-  // usuwamy stare markery
   markers.forEach(m => m.setMap(null));
   markers = [];
 
@@ -164,7 +164,7 @@ function createMarkers() {
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
-    if(input.length && !input.includes(firstLetter)) return; // pomijamy resztę
+    if(input.length && !input.includes(firstLetter)) return;
 
     const isMin = minByLetter[firstLetter] !== undefined && loc.min === minByLetter[firstLetter];
 
@@ -194,14 +194,14 @@ function createMarkers() {
 createMarkers();
 document.getElementById('letterInput').addEventListener('input', createMarkers);
 
-// funkcja licząca dystans (prosta euklidesowa)
+// Funkcja licząca dystans (Euklides)
 function distance(a,b) {
   const dx = a.lat - b.lat;
   const dy = a.lng - b.lng;
   return Math.sqrt(dx*dx + dy*dy);
 }
 
-// przycisk TRASA
+// Przycisk TRASA
 document.getElementById('showRoute').addEventListener('click', () => {
   const input = document.getElementById('letterInput').value
     .toUpperCase()
@@ -222,7 +222,6 @@ document.getElementById('showRoute').addEventListener('click', () => {
     return input.length && input.includes(firstLetter) && loc.min === minByLetter[firstLetter];
   });
 
-  // sortowanie według odległości od startu
   greenLocations.sort((a,b) => distance(startPoint,a) - distance(startPoint,b));
 
   if(greenLocations.length) {
