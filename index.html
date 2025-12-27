@@ -22,9 +22,7 @@
   <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
 </div>
 
-<div id="bestRouteContainer" style="margin:10px;font-weight:bold;"></div>
 <div id="map"></div>
-
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn7fow-jhcIvU8wCHJaCzQcRdqR9-hRWU"></script>
 
@@ -35,11 +33,6 @@ const map = new google.maps.Map(document.getElementById('map'), {
   center: mapCenter,
   gestureHandling: "greedy"
 });
-
-// Directions API
-const directionsService = new google.maps.DirectionsService();
-const directionsRenderer = new google.maps.DirectionsRenderer();
-directionsRenderer.setMap(map);
 
 // Punkt startowy
 const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
@@ -78,7 +71,7 @@ const locations = [
   {"name":"Gostków","lat":50.84122139999999,"lng":16.1076669,"min":20},
   {"name":"Grzędy","lat":50.7446382,"lng":16.1383339,"min":21},
   {"name":"Grzmiąca","lat":50.696404405505284,"lng":16.340071982592946,"min":25},
-  {"name":"Granica","lat":50.930123187626684,"lng": 16.307856935205955,"min":26},
+  {"name":"Granica","lat":50.930123187626684,"lng":16.307856935205955,"min":26},
   {"name":"Gluszyca","lat":50.68728,"lng":16.37107,"min":30},
   {"name":"Golinsk","lat":50.6475182,"lng":16.1997391,"min":30},
   {"name":"Glinno","lat":50.718726294345274,"lng":16.475143796287757,"min":35},
@@ -86,11 +79,11 @@ const locations = [
   {"name":"Jedlina-Zdrój","lat":50.7252382,"lng":16.3461015,"min":23},
   {"name":"Jaczków","lat":50.80757305174899,"lng":16.102996932976207,"min":24},
   {"name":"Jugowice","lat":50.7214919,"lng":16.4023896,"min":24},
-  {"name":"Jakubów","lat":50.818444549200265,"lng": 16.502555022507817,"min":26},
+  {"name":"Jakubów","lat":50.818444549200265,"lng":16.502555022507817,"min":26},
   {"name":"Kamienna Góra","lat":50.7852076,"lng":16.0237177,"min":27},
   {"name":"Krzeszów","lat":50.7333738,"lng":16.070745,"min":27},
   {"name":"Krzeszówek","lat":50.7161683,"lng":16.0916809,"min":30},
-  {"name":"Komorów","lat":50.84531484436614,"lng": 16.416754661896217,"min":19},
+  {"name":"Komorów","lat":50.84531484436614,"lng":16.416754661896217,"min":19},
   {"name":"Kolce","lat":50.665081,"lng":16.4021235,"min":44},
   {"name":"Kowalowa","lat":50.68265171059332,"lng":16.20339262337273,"min":24},
   {"name":"Lubomin","lat":50.805072,"lng":16.2050047,"min":8},
@@ -102,7 +95,7 @@ const locations = [
   {"name":"Milikowice","lat":50.8675912,"lng":16.410211,"min":18},
   {"name":"Modliszów","lat":50.7930273,"lng":16.393433,"min":24},
   {"name":"Makowice","lat":50.8062243,"lng":16.5083852,"min":28},
-  {"name":"Marciszów","lat":50.84140375656991,"lng": 16.036899492735273,"min":29},
+  {"name":"Marciszów","lat":50.84140375656991,"lng":16.036899492735273,"min":29},
   {"name":"Michalkowa","lat":50.737853,"lng":16.4510094,"min":31},
   {"name":"Mirosławice","lat":50.960286014125074,"lng":16.82285092973599,"min":42},
   {"name":"Nowy Julianów","lat":50.7802625,"lng":16.3387494,"min":13},
@@ -113,8 +106,8 @@ const locations = [
   {"name":"Olszany","lat":50.91204020000001,"lng":16.3290698,"min":26},
   {"name":"Opoczka","lat":50.79775309999999,"lng":16.5015326,"min":27},
   {"name":"Pogorzała","lat":50.805471,"lng":16.3658487,"min":14},
-  {"name":"Podlesie","lat":50.73886668708805,"lng": 16.35806204027157,"min":18},
-  {"name":"Pietrzyków","lat":50.89447209040212,"lng": 16.218543878091534,"min":19},
+  {"name":"Podlesie","lat":50.73886668708805,"lng":16.35806204027157,"min":18},
+  {"name":"Pietrzyków","lat":50.89447209040212,"lng":16.218543878091534,"min":19},
   {"name":"Ptaszków","lat":50.7927741,"lng":16.0406965,"min":26},
   {"name":"Podgórna","lat":50.845558048086716,"lng":16.207487063440652,"min":27},
   {"name":"Przedwojów","lat":50.7548233,"lng":16.0156476,"min":32},
@@ -127,13 +120,13 @@ const locations = [
   {"name":"Szczawno-Zdrój","lat":50.810462,"lng":16.247897,"min":1},
   {"name":"Struga","lat":50.8232204,"lng":16.2267887,"min":6},
   {"name":"Stare Bogaczewice","lat":50.84777060021518,"lng":16.20124010317787,"min":9},
-  {"name":"Siodlkowice","lat":50.894619374115855,"lng": 16.261638857421374,"min":18},
+  {"name":"Siodlkowice","lat":50.894619374115855,"lng":16.261638857421374,"min":18},
   {"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322,"min":26},
   {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37},
   {"name":"Tomkowa","lat":50.8771569,"lng":16.4594463,"min":23},
-  {"name":"Tarnawa","lat":50.96468037787958,"lng": 16.548344091043692,"min":35},
+  {"name":"Tarnawa","lat":50.96468037787958,"lng":16.548344091043692,"min":35},
   {"name":"Tomkowice","lat":50.9412972,"lng":16.2937621,"min":28},
-  {"name":"Tuszyn","lat":50.796290161261076,"lng": 16.648889865299974,"min":43},
+  {"name":"Tuszyn","lat":50.796290161261076,"lng":16.648889865299974,"min":43},
   {"name":"Unislaw Slaski","lat":50.7128007,"lng":16.2383277,"min":19},
   {"name":"Witoszów Górny","lat":50.8163029,"lng":16.3863663,"min":17},
   {"name":"Witoszów Dolny","lat":50.8241697,"lng":16.4285465,"min":19},
@@ -141,7 +134,7 @@ const locations = [
   {"name":"Walim","lat":50.6974362,"lng":16.4422202,"min":30},
   {"name":"Zagórze Śląskie","lat":50.758871,"lng":16.4013558,"min":24},
   {"name":"Zawiszów","lat":50.8703999,"lng":16.4875682,"min":25}
-   ];
+];
 
 let markers = [];
 
@@ -192,39 +185,6 @@ function createMarkers() {
     marker.addListener('click', () => infowindow.open(map, marker));
     markers.push(marker);
   });
-
-  // Wyznaczanie optymalnej trasy po zielonych markerach
-  const greenLocations = locations.filter(loc => {
-    const firstLetter = loc.name.charAt(0).toUpperCase();
-    return input.length && input.includes(firstLetter) && loc.min === minByLetter[firstLetter];
-  });
-
-  if (greenLocations.length) {
-    const waypoints = greenLocations.map(loc => ({ location: {lat: loc.lat, lng: loc.lng}, stopover: true }));
-
-    directionsService.route({
-      origin: startPoint,
-      destination: startPoint,
-      waypoints: waypoints,
-      optimizeWaypoints: true,
-      travelMode: 'DRIVING'
-    }, (response, status) => {
-      if (status === 'OK') directionsRenderer.setDirections(response);
-      else alert('Błąd w Directions API: ' + status);
-    });
-
-    let routeUrl = "https://www.google.com/maps/dir/";
-    routeUrl += `${startPoint.lat},${startPoint.lng}/`;
-    greenLocations.forEach(loc => {
-      routeUrl += `${loc.lat},${loc.lng}/`;
-    });
-    document.getElementById("bestRouteContainer").innerHTML = `
-      Najlepsza trasa (kliknij, aby otworzyć): 
-      <a href="${routeUrl}" target="_blank">Otwórz w Google Maps</a>
-    `;
-  } else {
-    document.getElementById("bestRouteContainer").innerHTML = "";
-  }
 }
 
 createMarkers();
@@ -233,7 +193,6 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 </body>
 </html>
-
 
 
 
