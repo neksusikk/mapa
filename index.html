@@ -14,7 +14,6 @@
   }
   #bestRouteContainer {
     margin: 10px;
-    font-weight: bold;
   }
 </style>
 </head>
@@ -222,16 +221,18 @@ document.getElementById('showRoute').addEventListener('click', () => {
     }
   });
 
-  const resultText = "<b>Najbliższe miejscowości:</b> " + Object.values(minByLetter).map(name => {
+ const resultText = "<b>Najbliższe miejscowości:</b> " + Object.values(minByLetter).map(name => {
   return "<b>" + name.charAt(0) + "</b>" + name.slice(1);
 }).join(", ");
 document.getElementById('bestRouteContainer').innerHTML = resultText;
+
 
 });
 </script>
 
 </body>
 </html>
+
 
 
 
