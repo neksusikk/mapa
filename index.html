@@ -5,16 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mapa Miejscowości</title>
 <style>
-  #map {
-    height: 90vh;
-    width: 100%;
-  }
-  #input-container {
-    margin: 10px;
-  }
+  #map { height: 90vh; width: 100%; }
+  #input-container { margin: 10px; }
 </style>
 </head>
-
 <body>
 
 <div id="input-container">
@@ -40,21 +34,12 @@ const startMarker = new google.maps.Marker({
   position: startPoint,
   map: map,
   label: { text: "Start", color: "white", fontWeight: "bold" },
-  icon: {
-    path: google.maps.SymbolPath.CIRCLE,
-    scale: 16,
-    fillColor: "blue",
-    fillOpacity: 1,
-    strokeWeight: 2,
-    strokeColor: "white"
-  }
+  icon: { path: google.maps.SymbolPath.CIRCLE, scale: 16, fillColor: "blue", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
 });
-const startInfo = new google.maps.InfoWindow({
-  content: "<b>Leroy Merlin Szczawno-Zdrój</b>"
-});
+const startInfo = new google.maps.InfoWindow({ content: "<b>Leroy Merlin Szczawno-Zdrój</b>" });
 startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
-// Lista miejscowości
+// Lista miejscowości (przykład, skrócona lista)
 const locations = [
   {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
   {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
@@ -122,7 +107,7 @@ const locations = [
   {"name":"Stare Bogaczewice","lat":50.84777060021518,"lng":16.20124010317787,"min":9},
   {"name":"Siodlkowice","lat":50.894619374115855,"lng": 16.261638857421374,"min":18},
   {"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322,"min":26},
-  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37},
+  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37}
   {"name":"Tomkowa","lat":50.8771569,"lng":16.4594463,"min":23},
   {"name":"Tarnawa","lat":50.96468037787958,"lng": 16.548344091043692,"min":35},
   {"name":"Tomkowice","lat":50.9412972,"lng":16.2937621,"min":28},
@@ -148,10 +133,12 @@ function createMarkers() {
     .map(s => s.trim())
     .filter(s => s);
 
-  const minForLetter = {};
+  let minForLetter = {};
+
+  // Znajdź minimalny czas tylko dla liter z inputa
   input.forEach(letter => {
     const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
-    if(filtered.length > 0) {
+    if(filtered.length) {
       const minLoc = filtered.reduce((prev, curr) => curr.min < prev.min ? curr : prev);
       minForLetter[letter] = minLoc.name;
     }
@@ -159,7 +146,9 @@ function createMarkers() {
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
-    if(input[0] && !input.includes(firstLetter)) return;
+
+    // Jeśli jest filtr i litera nie jest w input, pomiń
+    if(input.length && !input.includes(firstLetter)) return;
 
     const isMin = minForLetter[firstLetter] === loc.name;
 
@@ -180,7 +169,6 @@ function createMarkers() {
     const infowindow = new google.maps.InfoWindow({
       content: `<b>${loc.name}</b><br>${loc.min} min`
     });
-
     marker.addListener('click', () => infowindow.open(map, marker));
     markers.push(marker);
   });
@@ -189,6 +177,5 @@ function createMarkers() {
 createMarkers();
 document.getElementById('letterInput').addEventListener('input', createMarkers);
 </script>
-
 </body>
 </html>
