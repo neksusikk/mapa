@@ -22,9 +22,11 @@
   <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
 </div>
 
+<div id="bestRouteContainer" style="margin:10px;font-weight:bold;"></div>
 <div id="map"></div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpfag3U0jH6xExZSZtz-YRWqSDa5MsfYE"></script>
+<!-- Twój klucz API wstaw tutaj -->
+<script src="https://maps.googleapis.com/maps/api/js?key=TWÓJ_KLUCZ"></script>
 
 <script>
 const mapCenter = {lat: 50.7415, lng: 16.1553};
@@ -34,7 +36,12 @@ const map = new google.maps.Map(document.getElementById('map'), {
   gestureHandling: "greedy"
 });
 
-// Punkt startowy - Leroy Merlin
+// Directions API
+const directionsService = new google.maps.DirectionsService();
+const directionsRenderer = new google.maps.DirectionsRenderer();
+directionsRenderer.setMap(map);
+
+// Punkt startowy
 const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
 const startMarker = new google.maps.Marker({
   position: startPoint,
@@ -122,7 +129,7 @@ const locations = [
   {"name":"Stare Bogaczewice","lat":50.84777060021518,"lng":16.20124010317787,"min":9},
   {"name":"Siodlkowice","lat":50.894619374115855,"lng": 16.261638857421374,"min":18},
   {"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322,"min":26},
-  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37},
+  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37}
   {"name":"Tomkowa","lat":50.8771569,"lng":16.4594463,"min":23},
   {"name":"Tarnawa","lat":50.96468037787958,"lng": 16.548344091043692,"min":35},
   {"name":"Tomkowice","lat":50.9412972,"lng":16.2937621,"min":28},
@@ -134,7 +141,7 @@ const locations = [
   {"name":"Walim","lat":50.6974362,"lng":16.4422202,"min":30},
   {"name":"Zagórze Śląskie","lat":50.758871,"lng":16.4013558,"min":24},
   {"name":"Zawiszów","lat":50.8703999,"lng":16.4875682,"min":25}
-];
+   ];
 
 let markers = [];
 
@@ -146,9 +153,8 @@ function createMarkers() {
     .toUpperCase()
     .split(',')
     .map(s => s.trim())
-    .filter(s => s); // usuwa puste
+    .filter(s => s);
 
-  // minimalne min dla każdej litery
   const minByLetter = {};
   if(input.length) {
     input.forEach(letter => {
@@ -186,6 +192,39 @@ function createMarkers() {
     marker.addListener('click', () => infowindow.open(map, marker));
     markers.push(marker);
   });
+
+  // Wyznaczanie optymalnej trasy po zielonych markerach
+  const greenLocations = locations.filter(loc => {
+    const firstLetter = loc.name.charAt(0).toUpperCase();
+    return input.length && input.includes(firstLetter) && loc.min === minByLetter[firstLetter];
+  });
+
+  if (greenLocations.length) {
+    const waypoints = greenLocations.map(loc => ({ location: {lat: loc.lat, lng: loc.lng}, stopover: true }));
+
+    directionsService.route({
+      origin: startPoint,
+      destination: startPoint,
+      waypoints: waypoints,
+      optimizeWaypoints: true,
+      travelMode: 'DRIVING'
+    }, (response, status) => {
+      if (status === 'OK') directionsRenderer.setDirections(response);
+      else alert('Błąd w Directions API: ' + status);
+    });
+
+    let routeUrl = "https://www.google.com/maps/dir/";
+    routeUrl += `${startPoint.lat},${startPoint.lng}/`;
+    greenLocations.forEach(loc => {
+      routeUrl += `${loc.lat},${loc.lng}/`;
+    });
+    document.getElementById("bestRouteContainer").innerHTML = `
+      Najlepsza trasa (kliknij, aby otworzyć): 
+      <a href="${routeUrl}" target="_blank">Otwórz w Google Maps</a>
+    `;
+  } else {
+    document.getElementById("bestRouteContainer").innerHTML = "";
+  }
 }
 
 createMarkers();
@@ -194,5 +233,6 @@ document.getElementById('letterInput').addEventListener('input', createMarkers);
 
 </body>
 </html>
+
 
 
