@@ -221,10 +221,12 @@ document.getElementById('showRoute').addEventListener('click', () => {
     }
   });
 
- const resultText = "<b>Najbliższe miejscowości:</b> " + Object.values(minByLetter).map(name => {
-  return "<b>" + name.charAt(0) + "</b>" + name.slice(1);
-}).join(", ");
-document.getElementById('bestRouteContainer').innerHTML = resultText;
+const resultText = "Najbliższe miejscowości: ";
+const formattedLocations = Object.values(minByLetter).map(name => {
+  return `<b>${name.charAt(0)}</b>${name.slice(1)}`;
+});
+document.getElementById('bestRouteContainer').innerHTML = `<b>${resultText}</b> ${formattedLocations.join(", ")}`;
+
 
 
 });
@@ -232,6 +234,7 @@ document.getElementById('bestRouteContainer').innerHTML = resultText;
 
 </body>
 </html>
+
 
 
 
