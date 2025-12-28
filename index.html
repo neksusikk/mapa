@@ -186,19 +186,8 @@ const locations = [
 ];
 
 // ================= ALGORYTM =================
-function dist(a,b){
-  return Math.hypot(a.lat-b.lat,a.lng-b.lng);
-}
-
-function permutations(arr){
-  if(arr.length<=1) return [arr];
-  let res=[];
-  arr.forEach((x,i)=>{
-    let rest=[...arr.slice(0,i),...arr.slice(i+1)];
-    permutations(rest).forEach(p=>res.push([x,...p]));
-  });
-  return res;
-}
+function dist(a,b){return Math.hypot(a.lat-b.lat,a.lng-b.lng);}
+function permutations(arr){if(arr.length<=1)return[arr];let res=[];arr.forEach((x,i)=>{let rest=[...arr.slice(0,i),...arr.slice(i+1)];permutations(rest).forEach(p=>res.push([x,...p]));});return res;}
 
 function randomLetters(){
   const count=parseInt(document.getElementById("randomCount").value)||1;
@@ -221,6 +210,7 @@ function calculate(){
   const start=locations.find(l=>l.name==="Szczawno-Zdrój");
   addMarker(start,"blue","S");
 
+  // ================= zielone dla liter =================
   const targets=[];
   input.forEach(letter=>{
     const opts=locations.filter(l=>l.name[0].toUpperCase()===letter);
@@ -231,6 +221,14 @@ function calculate(){
     }
   });
 
+  // ================= czerwone dla wszystkich pozostałych =================
+  locations.forEach(loc=>{
+    if(!targets.includes(loc) && loc.name!=="Szczawno-Zdrój"){
+      addMarker(loc,"red",loc.name[0].toUpperCase());
+    }
+  });
+
+  // ================= permutacje tras =================
   const routes=permutations(targets).map(p=>{
     let d=dist(start,p[0]);
     for(let i=0;i<p.length-1;i++) d+=dist(p[i],p[i+1]);
