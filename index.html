@@ -5,15 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mapa Miejscowości</title>
 <style>
+  body {
+    background: linear-gradient(135deg, #f0d5ff, #e0c3fc); /* delikatny liliowy gradient */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #input-container {
+    background: #e0c3fc; /* liliowe tło */
+    border: 2px solid #b185f5; /* ciemniejsza ramka */
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    padding: 30px 40px;
+    width: 400px;
+    margin: 30px 0;
+    text-align: center;
+  }
+
+  #input-container input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #b185f5;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+
+  #input-container button {
+    width: 100%;
+    padding: 10px;
+    background: #b185f5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  #input-container button:hover {
+    background: #9a5dd4;
+  }
+
+  #bestRouteContainer {
+    margin: 10px 0 20px 0;
+    font-weight: bold;
+    text-align: center;
+  }
+
   #map {
     height: 80vh;
-    width: 100%;
-  }
-  #input-container {
-    margin: 10px;
-  }
-  #bestRouteContainer {
-    margin: 10px;
+    width: 90%;
+    max-width: 1200px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    margin-bottom: 40px;
   }
 </style>
 </head>
@@ -203,7 +253,6 @@ createMarkers();
 map.setCenter(startPoint);
 document.getElementById('letterInput').addEventListener('input', createMarkers);
 
-// Wyświetlenie najbliższych miejscowości przy ręcznym wpisaniu liter
 document.getElementById('showRoute').addEventListener('click', () => {
   const input = document.getElementById('letterInput').value
     .toUpperCase()
@@ -231,25 +280,16 @@ document.getElementById('showRoute').addEventListener('click', () => {
   document.getElementById('bestRouteContainer').innerHTML = `<b>${resultText}</b> ${formattedLocations.join(", ")}`;
 });
 
-// Losowanie liter - TYLKO do inputa, bez wyświetlania tekstu
 document.getElementById('randomLetters').addEventListener('click', () => {
   const count = parseInt(document.getElementById('randomCount').value) || 1;
   const availableLetters = [...new Set(locations.map(l => l.name.charAt(0).toUpperCase()))];
   const shuffled = availableLetters.sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, count);
 
-  // wpisz w input filtrujący
   document.getElementById('letterInput').value = selected.join(',');
-  createMarkers(); // mapka reaguje
-  // nie wyświetlamy napisu
+  createMarkers();
 });
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
