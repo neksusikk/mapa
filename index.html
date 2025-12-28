@@ -24,10 +24,6 @@
   Filtruj litery (np. B,D,K):
   <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
   <button id="showRoute">Pokaż Najbliższe</button>
-  <br><br>
-Ilość losowych liter:
-<input type="number" id="randomCount" min="1" max="26" style="width:60px;">
-<button id="randomLettersBtn">Losuj litery</button>
 
 </div>
 
@@ -235,38 +231,11 @@ document.getElementById('bestRouteContainer').innerHTML = `<b>${resultText}</b> 
 
 
 });
-  <script>
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-
-document.getElementById('randomLettersBtn').addEventListener('click', () => {
-  const count = parseInt(document.getElementById('randomCount').value);
-
-  if (!count || count < 1 || count > 26) {
-    document.getElementById('bestRouteContainer').innerHTML =
-      "<b>Najbliższe miejscowości:</b> — wpisz liczbę 1–26";
-    return;
-  }
-
-  // losowanie bez powtórek
-  const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
-  const selected = shuffled.slice(0, count);
-
-  // formatowanie: pierwsza litera pogrubiona
-  const formatted = selected.map(l => `<b>${l}</b>`).join(", ");
-
-  document.getElementById('bestRouteContainer').innerHTML =
-    `<b>Najbliższe miejscowości:</b> ${formatted}`;
-
-  // opcjonalnie: wpisuje litery też do inputa mapy
-  document.getElementById('letterInput').value = selected.join(",");
-  createMarkers();
-});
-</script>
-
 </script>
 
 </body>
 </html>
+
 
 
 
