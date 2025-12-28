@@ -3,107 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Optymalna trasa – pełna lista</title>
-
+<title>Mapa Miejscowości – optymalna trasa</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#e6d3ff,#f3e9ff);
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#f0d5ff,#e0c3fc);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#panel{
-  background:#e6d3ff;
-  border:2px solid #b58cff;
-  border-radius:16px;
-  padding:15px;
-  margin:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,.2);
+#input-container {
+  background: #e0c3fc;
+  border: 2px solid #b185f5;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  margin: 15px 0;
+  text-align: center;
 }
 
-#panel input,#panel button{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  font-size:16px;
-  border-radius:10px;
-  border:1px solid #b58cff;
+#input-container input {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #b185f5;
+  border-radius: 8px;
+  font-size: 16px;
 }
 
-#panel button{
-  background:#9f6bff;
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
+#input-container button {
+  width: 100%;
+  padding: 10px;
+  background: #b185f5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 10px;
 }
 
-#panel button:hover{
-  background:#8449ff;
+#input-container button:hover {
+  background: #9a5dd4;
 }
 
-#routeSuggestion{
-  margin:10px;
-  padding:12px;
-  background:#f2eaff;
-  border-left:4px solid #8449ff;
-  border-radius:12px;
-  font-weight:bold;
+#bestRouteContainer {
+  margin: 10px 0 10px 0;
+  font-weight: bold;
+  text-align: center;
 }
 
-#map{
-  width:100%;
-  height:65vh;
+#map {
+  width: 100%;
+  height: calc(100vh - 180px);
+}
+
+@media (min-width: 600px) {
+  #map {
+    height: 80vh;
+  }
+  #input-container {
+    width: 400px;
+    padding: 30px 40px;
+  }
 }
 </style>
 </head>
-
 <body>
 
-<div id="panel">
-  <input type="number" id="randomCount" placeholder="Ilość liter">
-  <button onclick="randomLetters()">Losuj litery</button>
-  <input type="text" id="letterInput" placeholder="Np. B,D,Z">
-  <button onclick="calculate()">Pokaż najlepsze trasy</button>
+<div id="input-container">
+  Ilość liter:
+  <input type="number" id="randomCount" placeholder="Ilość liter" min="1">
+  <button id="randomLetters">Losuj</button>
+  <br><br>
+  
+  Wylosowane litery to:
+  <input type="text" id="letterInput">
+  <button id="showRoute">Pokaż Najbliższe</button>
+  <br><br>
 </div>
 
-<div id="routeSuggestion"></div>
+<div id="bestRouteContainer"></div>
 <div id="map"></div>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn7fow-jhcIvU8wCHJaCzQcRdqR9-hRWU"></script>
-
 <script>
-// ================= MAPA =================
-const map = new google.maps.Map(document.getElementById("map"),{
-  center:{lat:50.810462,lng:16.247897},
-  zoom:12,
-  gestureHandling:"greedy"
+// --------- MAPA ---------
+const mapCenter = {lat: 50.7415, lng: 16.1553};
+const map = new google.maps.Map(document.getElementById('map'), {
+  zoom: window.innerWidth < 600 ? 12 : 11,
+  center: mapCenter,
+  gestureHandling: "greedy"
 });
 
-let markers=[];
+// START - Leroy Merlin / Szczawno-Zdrój
+const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
+const startMarker = new google.maps.Marker({
+  position: startPoint,
+  map: map,
+  label: { text: "Start", color: "white", fontWeight: "bold" },
+  icon: { path: google.maps.SymbolPath.CIRCLE, scale: 16, fillColor: "blue", fillOpacity:1, strokeWeight:2, strokeColor:"white" }
+});
+const startInfo = new google.maps.InfoWindow({ content: "<b>Leroy Merlin Szczawno-Zdrój</b>" });
+startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
-function clearMarkers(){
-  markers.forEach(m=>m.setMap(null));
-  markers=[];
-}
-
-function addMarker(loc,color,label){
-  const m=new google.maps.Marker({
-    position:{lat:loc.lat,lng:loc.lng},
-    map,
-    label:{text:label,color:"white",fontWeight:"bold"},
-    icon:{
-      path:google.maps.SymbolPath.CIRCLE,
-      scale:14,
-      fillColor:color,
-      fillOpacity:1,
-      strokeWeight:2,
-      strokeColor:"white"
-    }
-  });
-  markers.push(m);
-}
-
-// ================= DANE – PEŁNA LISTA =================
+// --------- LISTA MIEJSCOWOŚCI ---------
 const locations = [
   {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
   {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
@@ -185,64 +193,92 @@ const locations = [
   {"name":"Zawiszów","lat":50.8703999,"lng":16.4875682,"min":25}
 ];
 
-// ================= ALGORYTM =================
-function dist(a,b){return Math.hypot(a.lat-b.lat,a.lng-b.lng);}
-function permutations(arr){if(arr.length<=1)return[arr];let res=[];arr.forEach((x,i)=>{let rest=[...arr.slice(0,i),...arr.slice(i+1)];permutations(rest).forEach(p=>res.push([x,...p]));});return res;}
+let markers = [];
 
-function randomLetters(){
-  const count=parseInt(document.getElementById("randomCount").value)||1;
-  const letters=[...new Set(locations.map(l=>l.name[0].toUpperCase()))];
-  document.getElementById("letterInput").value=
-    letters.sort(()=>0.5-Math.random()).slice(0,count).join(",");
+// Funkcja tworząca markery z uwzględnieniem tras i liter
+function createMarkers(optimalRoute = []) {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+
+  const inputLetters = document.getElementById('letterInput').value
+    .toUpperCase().split(',').map(s => s.trim()).filter(s => s);
+
+  const minByLetter = {};
+  inputLetters.forEach(letter => {
+    const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
+    if(filtered.length){
+      minByLetter[letter] = Math.min(...filtered.map(l => l.min));
+    }
+  });
+
+  locations.forEach(loc => {
+    const firstLetter = loc.name.charAt(0).toUpperCase();
+    if(inputLetters.length && !inputLetters.includes(firstLetter)) return; // niepasujące literki pomijamy
+
+    let fillColor = "red"; // domyślnie czerwone dla pasującej litery
+    if(optimalRoute.includes(loc.name)) fillColor = "green"; // w trasie = zielone
+    if(loc.name === "Szczawno-Zdrój") fillColor = "blue"; // start
+
+    const marker = new google.maps.Marker({
+      position: {lat: loc.lat, lng: loc.lng},
+      map: map,
+      label: {text: firstLetter, color: "white", fontWeight:"bold"},
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale:16, fillColor: fillColor, fillOpacity:1, strokeWeight:2, strokeColor:"white" }
+    });
+
+    const info = new google.maps.InfoWindow({ content: `<b>${loc.name}</b><br>${loc.min} min` });
+    marker.addListener('click', ()=> info.open(map, marker));
+    markers.push(marker);
+  });
 }
 
-function calculate(){
-  clearMarkers();
+createMarkers();
+map.setCenter(startPoint);
+document.getElementById('letterInput').addEventListener('input', ()=> createMarkers([]));
 
-  const input=document.getElementById("letterInput").value
-    .toUpperCase().split(",").map(x=>x.trim()).filter(Boolean);
+// --------- LOSOWANIE ---------
+document.getElementById('randomLetters').addEventListener('click', ()=>{
+  const count = parseInt(document.getElementById('randomCount').value) || 1;
+  const availableLetters = [...new Set(locations.map(l=>l.name.charAt(0).toUpperCase()))];
+  const shuffled = availableLetters.sort(()=>0.5 - Math.random());
+  const selected = shuffled.slice(0,count);
+  document.getElementById('letterInput').value = selected.join(',');
+  createMarkers([]);
+});
 
-  if(!input.length){
-    document.getElementById("routeSuggestion").innerText="Wpisz litery.";
+// --------- POKAŻ NAJLEPSZĄ TRASĘ ---------
+document.getElementById('showRoute').addEventListener('click', ()=>{
+  const inputLetters = document.getElementById('letterInput').value
+    .toUpperCase().split(',').map(s=>s.trim()).filter(s=>s);
+
+  if(!inputLetters.length){
+    document.getElementById('bestRouteContainer').innerText = "Wpisz litery w polu powyżej!";
     return;
   }
 
-  const start=locations.find(l=>l.name==="Szczawno-Zdrój");
-  addMarker(start,"blue","S");
-
-  // ================= zielone dla liter =================
-  const targets=[];
-  input.forEach(letter=>{
-    const opts=locations.filter(l=>l.name[0].toUpperCase()===letter);
-    if(opts.length){
-      const best=opts.reduce((a,b)=>a.min<b.min?a:b);
-      targets.push(best);
-      addMarker(best,"green",letter);
+  // Wybieramy po jednym najbliższym punkcie dla każdej litery
+  const selectedLocations = [];
+  let currentPoint = startPoint;
+  inputLetters.forEach(letter=>{
+    const filtered = locations.filter(l=>l.name.charAt(0).toUpperCase()===letter && l.name!=="Szczawno-Zdrój");
+    if(filtered.length){
+      // najbliższy do currentPoint
+      const closest = filtered.reduce((prev,curr)=>{
+        const distPrev = Math.hypot(prev.lat-currentPoint.lat, prev.lng-currentPoint.lng);
+        const distCurr = Math.hypot(curr.lat-currentPoint.lat, curr.lng-currentPoint.lng);
+        return distCurr<distPrev?curr:prev;
+      });
+      selectedLocations.push(closest.name);
+      currentPoint = {lat:closest.lat,lng:closest.lng};
     }
   });
 
-  // ================= czerwone dla wszystkich pozostałych =================
-  locations.forEach(loc=>{
-    if(!targets.includes(loc) && loc.name!=="Szczawno-Zdrój"){
-      addMarker(loc,"red",loc.name[0].toUpperCase());
-    }
-  });
+  // Wyświetlamy w panelu
+  document.getElementById('bestRouteContainer').innerHTML = "<b>Najlepsza trasa:</b> "+selectedLocations.join(", ");
 
-  // ================= permutacje tras =================
-  const routes=permutations(targets).map(p=>{
-    let d=dist(start,p[0]);
-    for(let i=0;i<p.length-1;i++) d+=dist(p[i],p[i+1]);
-    return {order:p.map(x=>x.name),dist:d};
-  }).sort((a,b)=>a.dist-b.dist);
-
-  let html="<b>Najlepsze możliwe trasy:</b><br><br>";
-  routes.slice(0,3).forEach((r,i)=>{
-    html+=`${i+1}️⃣ Szczawno-Zdrój → ${r.order.join(" → ")}<br>`;
-  });
-
-  document.getElementById("routeSuggestion").innerHTML=html;
-}
+  // Odświeżamy markery z trasą
+  createMarkers(selectedLocations);
+});
 </script>
-
 </body>
 </html>
