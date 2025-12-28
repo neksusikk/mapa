@@ -200,8 +200,14 @@ createMarkers();
 map.setCenter(startPoint);
 document.getElementById('letterInput').addEventListener('input', createMarkers);
 
-// Wyświetlenie najbliższych miejscowości
-function showClosestLetters(input) {
+// Wyświetlenie najbliższych miejscowości przy ręcznym wpisaniu liter
+document.getElementById('showRoute').addEventListener('click', () => {
+  const input = document.getElementById('letterInput').value
+    .toUpperCase()
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s);
+
   if (!input.length) {
     document.getElementById('bestRouteContainer').innerText = "Wpisz litery w polu powyżej!";
     return;
@@ -220,18 +226,9 @@ function showClosestLetters(input) {
   const resultText = "Najbliższe miejscowości: ";
   const formattedLocations = Object.values(minByLetter).map(name => `<b>${name.charAt(0)}</b>${name.slice(1)}`);
   document.getElementById('bestRouteContainer').innerHTML = `<b>${resultText}</b> ${formattedLocations.join(", ")}`;
-}
-
-document.getElementById('showRoute').addEventListener('click', () => {
-  const input = document.getElementById('letterInput').value
-    .toUpperCase()
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s);
-  showClosestLetters(input);
 });
 
-// Losowanie liter
+// Losowanie liter - TYLKO do inputa, bez wyświetlania tekstu
 document.getElementById('randomLetters').addEventListener('click', () => {
   const count = parseInt(document.getElementById('randomCount').value) || 1;
   const availableLetters = [...new Set(locations.map(l => l.name.charAt(0).toUpperCase()))];
@@ -240,8 +237,8 @@ document.getElementById('randomLetters').addEventListener('click', () => {
 
   // wpisz w input filtrujący
   document.getElementById('letterInput').value = selected.join(',');
-  createMarkers();
-  showClosestLetters(selected);
+  createMarkers(); // mapka reaguje
+  // nie wyświetlamy napisu
 });
 </script>
 
