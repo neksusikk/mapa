@@ -21,13 +21,15 @@
 <body>
 
 <div id="input-container">
+   Losuj litery:
+  <input type="number" id="randomCount" placeholder="Ilość liter" min="1">
+  <button id="randomLetters">Losuj</button>
+  
   Wylosowane litery to:
   <input type="text" id="letterInput" placeholder="Wpisz litery i przecinki">
   <button id="showRoute">Pokaż Najbliższe</button>
   <br><br>
-  Losuj litery:
-  <input type="number" id="randomCount" placeholder="Ilość liter" min="1">
-  <button id="randomLetters">Losuj</button>
+ 
 </div>
 
 <div id="bestRouteContainer"></div>
@@ -244,4 +246,5 @@ document.getElementById('randomLetters').addEventListener('click', () => {
 
 </body>
 </html>
+
 
