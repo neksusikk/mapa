@@ -260,7 +260,7 @@ document.getElementById('randomLetters').addEventListener('click', () => {
   createMarkers();
 });
 
-// ---- NOWA FUNKCJA: trasa po jednej miejscowości na literę ----
+// ---- POPRAWIONA FUNKCJA: trasa po jednej miejscowości na literę ----
 function computeRoutes(inputLetters) {
   const filteredLocations = locations.filter(l => inputLetters.includes(l.name.charAt(0).toUpperCase()) && l.name !== "Szczawno-Zdrój");
   if (!filteredLocations.length) return [];
@@ -295,12 +295,6 @@ function computeRoutes(inputLetters) {
   }
 
   let lettersOrder = [...new Set(inputLetters)];
-  lettersOrder.sort((a,b)=>{
-    const locA = filteredLocations.filter(l=>l.name.charAt(0).toUpperCase()===a);
-    const locB = filteredLocations.filter(l=>l.name.charAt(0).toUpperCase()===b);
-    return distance(startPoint, locA[0]) - distance(startPoint, locB[0]);
-  });
-
   const bestRoute = generateRoute(startPoint, lettersOrder);
   const rightRoute = generateRoute(startPoint, [...lettersOrder].reverse());
   const leftRoute = generateRoute(startPoint, [...lettersOrder]);
