@@ -204,6 +204,7 @@ const locations = [
   {"name":"Zawiszów","lat":50.8703999,"lng":16.4875682,"min":25}
 ];
 
+// ---- MARKERY ----
 let markers = [];
 
 function createMarkers(selectedRoute=[]) {
@@ -215,16 +216,6 @@ function createMarkers(selectedRoute=[]) {
     .split(',')
     .map(s => s.trim())
     .filter(s => s);
-
-  const minByLetter = {};
-  if(input.length) {
-    input.forEach(letter => {
-      const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
-      if(filtered.length) {
-        minByLetter[letter] = Math.min(...filtered.map(l => l.min));
-      }
-    });
-  }
 
   locations.forEach(loc => {
     const firstLetter = loc.name.charAt(0).toUpperCase();
@@ -269,40 +260,52 @@ document.getElementById('randomLetters').addEventListener('click', () => {
   createMarkers();
 });
 
-// ---- NOWA FUNKCJA: obliczanie tras zgodnie z założeniami ----
+// ---- NOWA FUNKCJA: trasa po jednej miejscowości na literę ----
 function computeRoutes(inputLetters) {
   const filteredLocations = locations.filter(l => inputLetters.includes(l.name.charAt(0).toUpperCase()) && l.name !== "Szczawno-Zdrój");
   if (!filteredLocations.length) return [];
 
-  // FUNKCJA POMOCNICZA: odległość między punktami
   function distance(a,b){ return Math.hypot(a.lat-b.lat, a.lng-b.lng); }
 
-  // FUNKCJA POMOCNICZA: generowanie trasy w danym kierunku (najbliższe bez zawracania)
-  function generateRoute(start, locs, sortFunc=null){
-    let route = [];
-    let remaining = [...locs];
-    let current = start;
-    while(remaining.length){
-      if(sortFunc){
-        remaining.sort(sortFunc(current));
-      } else {
-        remaining.sort((a,b)=>distance(current,a)-distance(current,b));
+  function closestForLetter(current, letterLocs){
+    let minDist = Infinity;
+    let closest = null;
+    letterLocs.forEach(loc => {
+      const d = distance(current, loc);
+      if(d < minDist){
+        minDist = d;
+        closest = loc;
       }
-      route.push(remaining[0].name);
-      current = {lat: remaining[0].lat, lng: remaining[0].lng};
-      remaining.shift();
-    }
+    });
+    return closest;
+  }
+
+  function generateRoute(start, lettersOrder){
+    let route = [];
+    let current = start;
+    lettersOrder.forEach(letter => {
+      const letterLocs = filteredLocations.filter(l => l.name.charAt(0).toUpperCase() === letter);
+      if(letterLocs.length){
+        const chosen = closestForLetter(current, letterLocs);
+        route.push(chosen.name);
+        current = {lat: chosen.lat, lng: chosen.lng};
+      }
+    });
     return route;
   }
 
-  // NAJLEPSZA TRASA: minimalne zawracanie, blisko siebie
-  let bestRoute = generateRoute(startPoint, filteredLocations);
+  let lettersOrder = [...new Set(inputLetters)];
+  lettersOrder.sort((a,b)=>{
+    const locA = filteredLocations.filter(l=>l.name.charAt(0).toUpperCase()===a);
+    const locB = filteredLocations.filter(l=>l.name.charAt(0).toUpperCase()===b);
+    return distance(startPoint, locA[0]) - distance(startPoint, locB[0]);
+  });
 
-  // 4 dodatkowe trasy tekstowo: w prawo, w lewo, w gore, w dol
-  const rightRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>a.lng-curr.lng-b.lng+curr.lng);
-  const leftRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>curr.lng-a.lng+curr.lng-b.lng);
-  const upRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>a.lat-curr.lat-b.lat+curr.lat);
-  const downRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>curr.lat-a.lat+curr.lat-b.lat);
+  const bestRoute = generateRoute(startPoint, lettersOrder);
+  const rightRoute = generateRoute(startPoint, [...lettersOrder].reverse());
+  const leftRoute = generateRoute(startPoint, [...lettersOrder]);
+  const upRoute = generateRoute(startPoint, [...lettersOrder].sort().reverse());
+  const downRoute = generateRoute(startPoint, [...lettersOrder].sort());
 
   return [bestRoute, rightRoute, leftRoute, upRoute, downRoute];
 }
@@ -332,7 +335,6 @@ document.getElementById('showRoute').addEventListener('click', () => {
 
   createMarkers([...routes[0]]);
 });
-
 </script>
 
 </body>
