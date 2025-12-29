@@ -15,7 +15,6 @@
     background: linear-gradient(135deg, #f0d5ff, #e0c3fc);
   }
 
-  /* Formularz - kompaktowy liliowy prostokąt */
   #input-container {
     background: #e0c3fc;
     border: 2px solid #b185f5;
@@ -26,7 +25,7 @@
     max-width: 400px;
     margin: 15px 0;
     text-align: center;
-    height: auto; /* dopasowuje wysokość do zawartości */
+    height: auto;
   }
 
   #input-container input {
@@ -60,11 +59,10 @@
     text-align: center;
   }
 
-  /* Mapa wypełnia resztę ekranu */
   #map {
     width: 100%;
-    height: calc(100vh - 180px); /* całe okno minus przybliżona wysokość formularza i marginesy */
-    border-radius: 0; /* bez zbędnej ramki */
+    height: calc(100vh - 180px);
+    border-radius: 0;
     box-shadow: none;
   }
 
@@ -79,7 +77,6 @@
   }
 </style>
 </head>
-
 <body>
 
 <div id="input-container">
@@ -108,8 +105,8 @@ const map = new google.maps.Map(document.getElementById('map'), {
   gestureHandling: "greedy"
 });
 
-// Punkt startowy - Leroy Merlin
 const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
+
 const startMarker = new google.maps.Marker({
   position: startPoint,
   map: map,
@@ -123,12 +120,9 @@ const startMarker = new google.maps.Marker({
     strokeColor: "white"
   }
 });
-const startInfo = new google.maps.InfoWindow({
-  content: "<b>Leroy Merlin Szczawno-Zdrój</b>"
-});
+const startInfo = new google.maps.InfoWindow({content: "<b>Leroy Merlin Szczawno-Zdrój</b>"});
 startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
-// Lista miejscowości
 const locations = [
   {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
   {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
@@ -212,7 +206,7 @@ const locations = [
 
 let markers = [];
 
-function createMarkers() {
+function createMarkers(selectedRoute=[]) {
   markers.forEach(m => m.setMap(null));
   markers = [];
 
@@ -236,7 +230,7 @@ function createMarkers() {
     const firstLetter = loc.name.charAt(0).toUpperCase();
     if(input.length && !input.includes(firstLetter)) return;
 
-    const isMin = minByLetter[firstLetter] !== undefined && loc.min === minByLetter[firstLetter];
+    let isInRoute = selectedRoute.includes(loc.name);
 
     const marker = new google.maps.Marker({
       position: {lat: loc.lat, lng: loc.lng},
@@ -245,7 +239,7 @@ function createMarkers() {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 16,
-        fillColor: isMin ? "green" : "red",
+        fillColor: isInRoute ? "green" : "red",
         fillOpacity: 1,
         strokeWeight: 2,
         strokeColor: "white"
@@ -263,7 +257,49 @@ function createMarkers() {
 
 createMarkers();
 map.setCenter(startPoint);
+
 document.getElementById('letterInput').addEventListener('input', createMarkers);
+document.getElementById('randomLetters').addEventListener('click', () => {
+  const count = parseInt(document.getElementById('randomCount').value) || 1;
+  const availableLetters = [...new Set(locations.map(l => l.name.charAt(0).toUpperCase()))];
+  const shuffled = availableLetters.sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, count);
+
+  document.getElementById('letterInput').value = selected.join(',');
+  createMarkers();
+});
+
+// Funkcja do tworzenia dwóch sensownych tras
+function computeRoutes(inputLetters) {
+  const filteredLocations = locations.filter(l => inputLetters.includes(l.name.charAt(0).toUpperCase()) && l.name !== "Szczawno-Zdrój");
+
+  if (!filteredLocations.length) return [];
+
+  let firstRoute = [];
+  let remaining = [...filteredLocations];
+  let currentPoint = startPoint;
+
+  while(remaining.length) {
+    remaining.sort((a,b) => {
+      const dA = Math.hypot(currentPoint.lat - a.lat, currentPoint.lng - a.lng);
+      const dB = Math.hypot(currentPoint.lat - b.lat, currentPoint.lng - b.lng);
+      return dA - dB;
+    });
+    firstRoute.push(remaining[0].name);
+    currentPoint = {lat: remaining[0].lat, lng: remaining[0].lng};
+    remaining.shift();
+  }
+
+  let secondRoute = [...firstRoute].reverse();
+
+  if (secondRoute[0] === firstRoute[0] && secondRoute.length>1) {
+    const temp = secondRoute[0];
+    secondRoute[0] = secondRoute[1];
+    secondRoute[1] = temp;
+  }
+
+  return [firstRoute, secondRoute];
+}
 
 document.getElementById('showRoute').addEventListener('click', () => {
   const input = document.getElementById('letterInput').value
@@ -277,30 +313,19 @@ document.getElementById('showRoute').addEventListener('click', () => {
     return;
   }
 
-  const minByLetter = {};
-  input.forEach(letter => {
-    const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
-    if (filtered.length) {
-      const minValue = Math.min(...filtered.map(l => l.min));
-      const closestLoc = filtered.find(l => l.min === minValue);
-      minByLetter[letter] = closestLoc.name;
-    }
+  const routes = computeRoutes(input);
+  if(!routes.length) return;
+
+  let html = '';
+  routes.forEach((r,i) => {
+    html += `<b>Trasa ${i+1}:</b> ${r.join(", ")}<br>`;
   });
 
-  const resultText = "Najbliższe miejscowości: ";
-  const formattedLocations = Object.values(minByLetter).map(name => `<b>${name.charAt(0)}</b>${name.slice(1)}`);
-  document.getElementById('bestRouteContainer').innerHTML = `<b>${resultText}</b> ${formattedLocations.join(", ")}`;
+  document.getElementById('bestRouteContainer').innerHTML = html;
+
+  createMarkers([...routes[0], ...routes[1]]);
 });
 
-document.getElementById('randomLetters').addEventListener('click', () => {
-  const count = parseInt(document.getElementById('randomCount').value) || 1;
-  const availableLetters = [...new Set(locations.map(l => l.name.charAt(0).toUpperCase()))];
-  const shuffled = availableLetters.sort(() => 0.5 - Math.random());
-  const selected = shuffled.slice(0, count);
-
-  document.getElementById('letterInput').value = selected.join(',');
-  createMarkers();
-});
 </script>
 
 </body>
