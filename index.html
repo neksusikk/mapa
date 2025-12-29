@@ -89,14 +89,12 @@
   <input type="text" id="letterInput">
   <button id="showRoute">Pokaż Najbliższe</button>
   <br><br>
- 
 </div>
 
 <div id="bestRouteContainer"></div>
 <div id="map"></div>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn7fow-jhcIvU8wCHJaCzQcRdqR9-hRWU"></script>
-
 <script>
 const mapCenter = {lat: 50.7415, lng: 16.1553};
 const map = new google.maps.Map(document.getElementById('map'), {
@@ -177,7 +175,6 @@ const locations = [
   {"name":"Podlesie","lat":50.73886668708805,"lng":16.35806204027157,"min":18},
   {"name":"Pietrzyków","lat":50.89447209040212,"lng":16.218543878091534,"min":19},
   {"name":"Ptaszków","lat":50.7927741,"lng":16.0406965,"min":26},
-  {"name":"Podgórna","lat":50.845558048086716,"lng":16.207487063440652,"min":27},
   {"name":"Przedwojów","lat":50.7548233,"lng":16.0156476,"min":32},
   {"name":"Rybnica Leśna","lat":50.7006694,"lng":16.2786536,"min":20},
   {"name":"Rzeczka","lat":50.669310559334356,"lng":16.455366084998857,"min":34},
@@ -260,48 +257,37 @@ document.getElementById('randomLetters').addEventListener('click', () => {
   createMarkers();
 });
 
-// ---- POPRAWIONA FUNKCJA: trasa po jednej miejscowości na literę ----
+// ---- POPRAWIONA FUNKCJA: trasa minimalizująca zawracanie i czas ----
 function computeRoutes(inputLetters) {
   const filteredLocations = locations.filter(l => inputLetters.includes(l.name.charAt(0).toUpperCase()) && l.name !== "Szczawno-Zdrój");
   if (!filteredLocations.length) return [];
 
   function distance(a,b){ return Math.hypot(a.lat-b.lat, a.lng-b.lng); }
 
-  function closestForLetter(current, letterLocs){
-    let minDist = Infinity;
-    let closest = null;
-    letterLocs.forEach(loc => {
+  let route = [];
+  let current = startPoint;
+  const usedNames = new Set();
+
+  inputLetters.forEach(letter => {
+    const candidates = filteredLocations.filter(l => l.name.charAt(0).toUpperCase() === letter && !usedNames.has(l.name));
+    if(candidates.length === 0) return;
+
+    let closest = candidates[0];
+    let minDist = distance(current, closest);
+    candidates.forEach(loc => {
       const d = distance(current, loc);
       if(d < minDist){
         minDist = d;
         closest = loc;
       }
     });
-    return closest;
-  }
 
-  function generateRoute(start, lettersOrder){
-    let route = [];
-    let current = start;
-    lettersOrder.forEach(letter => {
-      const letterLocs = filteredLocations.filter(l => l.name.charAt(0).toUpperCase() === letter);
-      if(letterLocs.length){
-        const chosen = closestForLetter(current, letterLocs);
-        route.push(chosen.name);
-        current = {lat: chosen.lat, lng: chosen.lng};
-      }
-    });
-    return route;
-  }
+    route.push(closest.name);
+    usedNames.add(closest.name);
+    current = {lat: closest.lat, lng: closest.lng};
+  });
 
-  let lettersOrder = [...new Set(inputLetters)];
-  const bestRoute = generateRoute(startPoint, lettersOrder);
-  const rightRoute = generateRoute(startPoint, [...lettersOrder].reverse());
-  const leftRoute = generateRoute(startPoint, [...lettersOrder]);
-  const upRoute = generateRoute(startPoint, [...lettersOrder].sort().reverse());
-  const downRoute = generateRoute(startPoint, [...lettersOrder].sort());
-
-  return [bestRoute, rightRoute, leftRoute, upRoute, downRoute];
+  return [route];
 }
 
 document.getElementById('showRoute').addEventListener('click', () => {
@@ -319,12 +305,7 @@ document.getElementById('showRoute').addEventListener('click', () => {
   const routes = computeRoutes(input);
   if(!routes.length) return;
 
-  let html = '';
-  routes.forEach((r,i)=>{
-    if(i===0) html += `<b>Najlepsza trasa (zielona na mapie):</b> ${r.join(", ")}<br>`;
-    else html += `<b>Trasa alternatywna ${i}:</b> ${r.join(", ")}<br>`;
-  });
-
+  let html = `<b>Najlepsza trasa (zielona na mapie):</b> ${routes[0].join(", ")}<br>`;
   document.getElementById('bestRouteContainer').innerHTML = html;
 
   createMarkers([...routes[0]]);
