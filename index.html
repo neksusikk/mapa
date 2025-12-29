@@ -269,36 +269,42 @@ document.getElementById('randomLetters').addEventListener('click', () => {
   createMarkers();
 });
 
-// Funkcja do tworzenia dwóch sensownych tras
+// ---- NOWA FUNKCJA: obliczanie tras zgodnie z założeniami ----
 function computeRoutes(inputLetters) {
   const filteredLocations = locations.filter(l => inputLetters.includes(l.name.charAt(0).toUpperCase()) && l.name !== "Szczawno-Zdrój");
-
   if (!filteredLocations.length) return [];
 
-  let firstRoute = [];
-  let remaining = [...filteredLocations];
-  let currentPoint = startPoint;
+  // FUNKCJA POMOCNICZA: odległość między punktami
+  function distance(a,b){ return Math.hypot(a.lat-b.lat, a.lng-b.lng); }
 
-  while(remaining.length) {
-    remaining.sort((a,b) => {
-      const dA = Math.hypot(currentPoint.lat - a.lat, currentPoint.lng - a.lng);
-      const dB = Math.hypot(currentPoint.lat - b.lat, currentPoint.lng - b.lng);
-      return dA - dB;
-    });
-    firstRoute.push(remaining[0].name);
-    currentPoint = {lat: remaining[0].lat, lng: remaining[0].lng};
-    remaining.shift();
+  // FUNKCJA POMOCNICZA: generowanie trasy w danym kierunku (najbliższe bez zawracania)
+  function generateRoute(start, locs, sortFunc=null){
+    let route = [];
+    let remaining = [...locs];
+    let current = start;
+    while(remaining.length){
+      if(sortFunc){
+        remaining.sort(sortFunc(current));
+      } else {
+        remaining.sort((a,b)=>distance(current,a)-distance(current,b));
+      }
+      route.push(remaining[0].name);
+      current = {lat: remaining[0].lat, lng: remaining[0].lng};
+      remaining.shift();
+    }
+    return route;
   }
 
-  let secondRoute = [...firstRoute].reverse();
+  // NAJLEPSZA TRASA: minimalne zawracanie, blisko siebie
+  let bestRoute = generateRoute(startPoint, filteredLocations);
 
-  if (secondRoute[0] === firstRoute[0] && secondRoute.length>1) {
-    const temp = secondRoute[0];
-    secondRoute[0] = secondRoute[1];
-    secondRoute[1] = temp;
-  }
+  // 4 dodatkowe trasy tekstowo: w prawo, w lewo, w gore, w dol
+  const rightRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>a.lng-curr.lng-b.lng+curr.lng);
+  const leftRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>curr.lng-a.lng+curr.lng-b.lng);
+  const upRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>a.lat-curr.lat-b.lat+curr.lat);
+  const downRoute = generateRoute(startPoint, filteredLocations, (curr)=> (a,b)=>curr.lat-a.lat+curr.lat-b.lat);
 
-  return [firstRoute, secondRoute];
+  return [bestRoute, rightRoute, leftRoute, upRoute, downRoute];
 }
 
 document.getElementById('showRoute').addEventListener('click', () => {
@@ -317,13 +323,14 @@ document.getElementById('showRoute').addEventListener('click', () => {
   if(!routes.length) return;
 
   let html = '';
-  routes.forEach((r,i) => {
-    html += `<b>Trasa ${i+1}:</b> ${r.join(", ")}<br>`;
+  routes.forEach((r,i)=>{
+    if(i===0) html += `<b>Najlepsza trasa (zielona na mapie):</b> ${r.join(", ")}<br>`;
+    else html += `<b>Trasa alternatywna ${i}:</b> ${r.join(", ")}<br>`;
   });
 
   document.getElementById('bestRouteContainer').innerHTML = html;
 
-  createMarkers([...routes[0], ...routes[1]]);
+  createMarkers([...routes[0]]);
 });
 
 </script>
