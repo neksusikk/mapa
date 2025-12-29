@@ -4,15 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mapa Miejscowości</title>
-
 <style>
   body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background: linear-gradient(135deg, #f0d5ff, #e0c3fc);
   }
 
+  /* Formularz - kompaktowy liliowy prostokąt */
   #input-container {
     background: #e0c3fc;
     border: 2px solid #b185f5;
@@ -20,29 +23,31 @@
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     padding: 20px;
     width: 90%;
-    max-width: 420px;
-    margin: 15px auto;
+    max-width: 400px;
+    margin: 15px 0;
     text-align: center;
+    height: auto; /* dopasowuje wysokość do zawartości */
   }
 
-  #input-container input,
-  #input-container button {
-    width: 100%;
+  #input-container input {
+    width: calc(100% - 20px);
     padding: 10px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #b185f5;
     border-radius: 8px;
     font-size: 16px;
   }
 
-  #input-container input {
-    border: 1px solid #b185f5;
-  }
-
   #input-container button {
+    width: 100%;
+    padding: 10px;
     background: #b185f5;
     color: white;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 10px;
   }
 
   #input-container button:hover {
@@ -50,17 +55,27 @@
   }
 
   #bestRouteContainer {
-    max-width: 420px;
-    margin: 10px auto;
+    margin: 10px 0 10px 0;
     font-weight: bold;
-    background: rgba(255,255,255,0.6);
-    padding: 10px;
-    border-radius: 10px;
+    text-align: center;
   }
 
+  /* Mapa wypełnia resztę ekranu */
   #map {
     width: 100%;
-    height: calc(100vh - 260px);
+    height: calc(100vh - 180px); /* całe okno minus przybliżona wysokość formularza i marginesy */
+    border-radius: 0; /* bez zbędnej ramki */
+    box-shadow: none;
+  }
+
+  @media (min-width: 600px) {
+    #map {
+      height: 80vh;
+    }
+    #input-container {
+      width: 400px;
+      padding: 30px 40px;
+    }
   }
 </style>
 </head>
@@ -68,13 +83,16 @@
 <body>
 
 <div id="input-container">
-  Ilość liter:
-  <input type="number" id="randomCount" min="1">
+   Ilość liter:
+  <input type="number" id="randomCount" placeholder="Ilość liter" min="1">
   <button id="randomLetters">Losuj</button>
-
-  Wylosowane litery:
+  <br><br>
+  
+  Wylosowane litery to:
   <input type="text" id="letterInput">
-  <button id="showRoute">Pokaż trasy</button>
+  <button id="showRoute">Pokaż Najbliższe</button>
+  <br><br>
+ 
 </div>
 
 <div id="bestRouteContainer"></div>
@@ -83,209 +101,207 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn7fow-jhcIvU8wCHJaCzQcRdqR9-hRWU"></script>
 
 <script>
-// ================= MAPA =================
-const startPoint = { lat: 50.81562701491546, lng: 16.27033305958717 };
-
-const map = new google.maps.Map(document.getElementById("map"), {
-  center: startPoint,
+const mapCenter = {lat: 50.7415, lng: 16.1553};
+const map = new google.maps.Map(document.getElementById('map'), {
   zoom: window.innerWidth < 600 ? 12 : 11,
+  center: mapCenter,
   gestureHandling: "greedy"
 });
 
-// START (jedyny niebieski)
-new google.maps.Marker({
+// Punkt startowy - Leroy Merlin
+const startPoint = { lat:50.81562701491546, lng:16.27033305958717 };
+const startMarker = new google.maps.Marker({
   position: startPoint,
-  map,
-  label: { text: "START", color: "white", fontWeight: "bold" },
+  map: map,
+  label: { text: "Start", color: "white", fontWeight: "bold" },
   icon: {
     path: google.maps.SymbolPath.CIRCLE,
     scale: 16,
     fillColor: "blue",
     fillOpacity: 1,
-    strokeColor: "white",
-    strokeWeight: 2
+    strokeWeight: 2,
+    strokeColor: "white"
   }
 });
+const startInfo = new google.maps.InfoWindow({
+  content: "<b>Leroy Merlin Szczawno-Zdrój</b>"
+});
+startMarker.addListener('click', () => startInfo.open(map, startMarker));
 
-// ================= DANE =================
+// Lista miejscowości
 const locations = [
-{"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072},
-{"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958},
-{"name":"Bronówek","lat":50.9064906,"lng":16.2219214},
-{"name":"Burkatów","lat":50.7923276,"lng":16.4670642},
-{"name":"Bolków","lat":50.92449999999999,"lng":16.10378},
-{"name":"Bolkowice","lat":50.9935743,"lng":16.1953672},
-{"name":"Chwaliszów","lat":50.8580439,"lng":16.2235428},
-{"name":"Czarny Bór","lat":50.7716843,"lng":16.130063},
-{"name":"Cieszów","lat":50.8668723,"lng":16.2607841},
-{"name":"Dziecmorowice","lat":50.768593,"lng":16.3499805},
-{"name":"Dębrznik","lat":50.8120015,"lng":16.0413309},
-{"name":"Domanów","lat":50.8664436,"lng":16.061815},
-{"name":"Gostków","lat":50.8412214,"lng":16.1076669},
-{"name":"Grzędy","lat":50.7446382,"lng":16.1383339},
-{"name":"Grzmiąca","lat":50.6964044,"lng":16.3400719},
-{"name":"Granica","lat":50.9301231,"lng":16.3078569},
-{"name":"Gluszyca","lat":50.68728,"lng":16.37107},
-{"name":"Golinsk","lat":50.6475182,"lng":16.1997391},
-{"name":"Glinno","lat":50.7187262,"lng":16.4751437},
-{"name":"Jablow","lat":50.7852988,"lng":16.1640059},
-{"name":"Jedlina-Zdrój","lat":50.7252382,"lng":16.3461015},
-{"name":"Jaczków","lat":50.8075730,"lng":16.1029969},
-{"name":"Jugowice","lat":50.7214919,"lng":16.4023896},
-{"name":"Jakubów","lat":50.8184445,"lng":16.5025550},
-{"name":"Kamienna Góra","lat":50.7852076,"lng":16.0237177},
-{"name":"Krzeszów","lat":50.7333738,"lng":16.070745},
-{"name":"Krzeszówek","lat":50.7161683,"lng":16.0916809},
-{"name":"Komorów","lat":50.8453148,"lng":16.4167546},
-{"name":"Kolce","lat":50.665081,"lng":16.4021235},
-{"name":"Kowalowa","lat":50.6826517,"lng":16.2033926},
-{"name":"Lubomin","lat":50.805072,"lng":16.2050047},
-{"name":"Lubachów","lat":50.7680484,"lng":16.433307},
-{"name":"Lutomia Górna","lat":50.7519253,"lng":16.5254117},
-{"name":"Lutomia Dolna","lat":50.7573784,"lng":16.5371223},
-{"name":"Lipienica","lat":50.7201108,"lng":16.0486238},
-{"name":"Mokrzeszów","lat":50.8523182,"lng":16.371938},
-{"name":"Milikowice","lat":50.8675912,"lng":16.410211},
-{"name":"Modliszów","lat":50.7930273,"lng":16.393433},
-{"name":"Makowice","lat":50.8062243,"lng":16.5083852},
-{"name":"Marciszów","lat":50.8414037,"lng":16.0368994},
-{"name":"Michalkowa","lat":50.737853,"lng":16.4510094},
-{"name":"Mirosławice","lat":50.9602860,"lng":16.8228509},
-{"name":"Nowy Julianów","lat":50.7802625,"lng":16.3387494},
-{"name":"Nowe Bogaczewice","lat":50.8394319,"lng":16.1338885},
-{"name":"Niedzwiedzica","lat":50.7394201,"lng":16.3905156},
-{"name":"Nowe Siodło","lat":50.6615770,"lng":16.2266005},
-{"name":"Olszyniec","lat":50.7298878,"lng":16.3701447},
-{"name":"Olszany","lat":50.9120402,"lng":16.3290698},
-{"name":"Opoczka","lat":50.7977530,"lng":16.5015326},
-{"name":"Pogorzała","lat":50.805471,"lng":16.3658487},
-{"name":"Podlesie","lat":50.7388666,"lng":16.3580620},
-{"name":"Pietrzyków","lat":50.8944720,"lng":16.2185438},
-{"name":"Ptaszków","lat":50.7927741,"lng":16.0406965},
-{"name":"Podgórna","lat":50.8455580,"lng":16.2074870},
-{"name":"Przedwojów","lat":50.7548233,"lng":16.0156476},
-{"name":"Rybnica Leśna","lat":50.7006694,"lng":16.2786536},
-{"name":"Rzeczka","lat":50.6693105,"lng":16.4553660},
-{"name":"Raszów","lat":50.8048864,"lng":15.9805648},
-{"name":"Różana","lat":51.0602367,"lng":16.4310811},
-{"name":"Rogoźnica","lat":51.0000046,"lng":16.2933659},
-{"name":"Rosciszów","lat":50.7084561,"lng":16.5481989},
-{"name":"Struga","lat":50.8232204,"lng":16.2267887},
-{"name":"Stare Bogaczewice","lat":50.8477706,"lng":16.2012401},
-{"name":"Siodlkowice","lat":50.8946193,"lng":16.2616388},
-{"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322},
-{"name":"Sierpnica","lat":50.6614527,"lng":16.4264784},
-{"name":"Tomkowa","lat":50.8771569,"lng":16.4594463},
-{"name":"Tarnawa","lat":50.9646803,"lng":16.5483440},
-{"name":"Tomkowice","lat":50.9412972,"lng":16.2937621},
-{"name":"Tuszyn","lat":50.7962901,"lng":16.6488898},
-{"name":"Unislaw Slaski","lat":50.7128007,"lng":16.2383277},
-{"name":"Witoszów Górny","lat":50.8163029,"lng":16.3863663},
-{"name":"Witoszów Dolny","lat":50.8241697,"lng":16.4285465},
-{"name":"Witków","lat":50.7978667,"lng":16.1299111},
-{"name":"Walim","lat":50.6974362,"lng":16.4422202},
-{"name":"Zagórze Śląskie","lat":50.758871,"lng":16.4013558},
-{"name":"Zawiszów","lat":50.8703999,"lng":16.4875682}
+  {"name":"Borówno","lat":50.77797954711741,"lng":16.110518811847072,"min":18},
+  {"name":"Boguszów Gorce","lat":50.7559487,"lng":16.2042958,"min":21},
+  {"name":"Bronówek","lat":50.9064906,"lng":16.2219214,"min":22},
+  {"name":"Burkatów","lat":50.7923276,"lng":16.4670642,"min":23},
+  {"name":"Bolków","lat":50.92449999999999,"lng":16.10378,"min":28},
+  {"name":"Bolkowice","lat":50.9935743,"lng":16.1953672,"min":33},
+  {"name":"Chwaliszów","lat":50.8580439,"lng":16.2235428,"min":12},
+  {"name":"Czarny Bór","lat":50.7716843,"lng":16.130063,"min":17},
+  {"name":"Cieszów","lat":50.8668723,"lng":16.2607841,"min":18},
+  {"name":"Dziecmorowice","lat":50.768593,"lng":16.3499805,"min":16},
+  {"name":"Dębrznik","lat":50.8120015,"lng":16.0413309,"min":28},
+  {"name":"Domanów","lat":50.8664436,"lng":16.061815,"min":33},
+  {"name":"Gostków","lat":50.84122139999999,"lng":16.1076669,"min":20},
+  {"name":"Grzędy","lat":50.7446382,"lng":16.1383339,"min":21},
+  {"name":"Grzmiąca","lat":50.696404405505284,"lng":16.340071982592946,"min":25},
+  {"name":"Granica","lat":50.930123187626684,"lng":16.307856935205955,"min":26},
+  {"name":"Gluszyca","lat":50.68728,"lng":16.37107,"min":30},
+  {"name":"Golinsk","lat":50.6475182,"lng":16.1997391,"min":30},
+  {"name":"Glinno","lat":50.718726294345274,"lng":16.475143796287757,"min":35},
+  {"name":"Jablow","lat":50.7852988,"lng":16.1640059,"min":13},
+  {"name":"Jedlina-Zdrój","lat":50.7252382,"lng":16.3461015,"min":23},
+  {"name":"Jaczków","lat":50.80757305174899,"lng":16.102996932976207,"min":24},
+  {"name":"Jugowice","lat":50.7214919,"lng":16.4023896,"min":24},
+  {"name":"Jakubów","lat":50.818444549200265,"lng":16.502555022507817,"min":26},
+  {"name":"Kamienna Góra","lat":50.7852076,"lng":16.0237177,"min":27},
+  {"name":"Krzeszów","lat":50.7333738,"lng":16.070745,"min":27},
+  {"name":"Krzeszówek","lat":50.7161683,"lng":16.0916809,"min":30},
+  {"name":"Komorów","lat":50.84531484436614,"lng":16.416754661896217,"min":19},
+  {"name":"Kolce","lat":50.665081,"lng":16.4021235,"min":44},
+  {"name":"Kowalowa","lat":50.68265171059332,"lng":16.20339262337273,"min":24},
+  {"name":"Lubomin","lat":50.805072,"lng":16.2050047,"min":8},
+  {"name":"Lubachów","lat":50.7680484,"lng":16.433307,"min":21},
+  {"name":"Lutomia Górna","lat":50.7519253,"lng":16.5254117,"min":29},
+  {"name":"Lutomia Dolna","lat":50.7573784,"lng":16.5371223,"min":31},
+  {"name":"Lipienica","lat":50.72011089999999,"lng":16.0486238,"min":31},
+  {"name":"Mokrzeszów","lat":50.8523182,"lng":16.371938,"min":14},
+  {"name":"Milikowice","lat":50.8675912,"lng":16.410211,"min":18},
+  {"name":"Modliszów","lat":50.7930273,"lng":16.393433,"min":24},
+  {"name":"Makowice","lat":50.8062243,"lng":16.5083852,"min":28},
+  {"name":"Marciszów","lat":50.84140375656991,"lng":16.036899492735273,"min":29},
+  {"name":"Michalkowa","lat":50.737853,"lng":16.4510094,"min":31},
+  {"name":"Mirosławice","lat":50.960286014125074,"lng":16.82285092973599,"min":42},
+  {"name":"Nowy Julianów","lat":50.7802625,"lng":16.3387494,"min":13},
+  {"name":"Nowe Bogaczewice","lat":50.8394319,"lng":16.1338885,"min":17},
+  {"name":"Niedzwiedzica","lat":50.7394201,"lng":16.3905156,"min":21},
+  {"name":"Nowe Siodło","lat":50.6615770091641,"lng":16.226600576112432,"min":27},
+  {"name":"Olszyniec","lat":50.7298878,"lng":16.3701447,"min":20},
+  {"name":"Olszany","lat":50.91204020000001,"lng":16.3290698,"min":26},
+  {"name":"Opoczka","lat":50.79775309999999,"lng":16.5015326,"min":27},
+  {"name":"Pogorzała","lat":50.805471,"lng":16.3658487,"min":14},
+  {"name":"Podlesie","lat":50.73886668708805,"lng":16.35806204027157,"min":18},
+  {"name":"Pietrzyków","lat":50.89447209040212,"lng":16.218543878091534,"min":19},
+  {"name":"Ptaszków","lat":50.7927741,"lng":16.0406965,"min":26},
+  {"name":"Podgórna","lat":50.845558048086716,"lng":16.207487063440652,"min":27},
+  {"name":"Przedwojów","lat":50.7548233,"lng":16.0156476,"min":32},
+  {"name":"Rybnica Leśna","lat":50.7006694,"lng":16.2786536,"min":20},
+  {"name":"Rzeczka","lat":50.669310559334356,"lng":16.455366084998857,"min":34},
+  {"name":"Raszów","lat":50.8048864,"lng":15.9805648,"min":35},
+  {"name":"Różana","lat":51.060236752077905,"lng":16.43108111992628,"min":35},
+  {"name":"Rogoźnica","lat":51.0000046,"lng":16.2933659,"min":36},
+  {"name":"Rosciszów","lat":50.7084561,"lng":16.5481989,"min":38},
+  {"name":"Szczawno-Zdrój","lat":50.810462,"lng":16.247897,"min":1},
+  {"name":"Struga","lat":50.8232204,"lng":16.2267887,"min":6},
+  {"name":"Stare Bogaczewice","lat":50.84777060021518,"lng":16.20124010317787,"min":9},
+  {"name":"Siodlkowice","lat":50.894619374115855,"lng":16.261638857421374,"min":18},
+  {"name":"Sokolowsko","lat":50.6863986,"lng":16.2351322,"min":26},
+  {"name":"Sierpnica","lat":50.66145277588611,"lng":16.426478469739628,"min":37},
+  {"name":"Tomkowa","lat":50.8771569,"lng":16.4594463,"min":23},
+  {"name":"Tarnawa","lat":50.96468037787958,"lng":16.548344091043692,"min":35},
+  {"name":"Tomkowice","lat":50.9412972,"lng":16.2937621,"min":28},
+  {"name":"Tuszyn","lat":50.796290161261076,"lng":16.648889865299974,"min":43},
+  {"name":"Unislaw Slaski","lat":50.7128007,"lng":16.2383277,"min":19},
+  {"name":"Witoszów Górny","lat":50.8163029,"lng":16.3863663,"min":17},
+  {"name":"Witoszów Dolny","lat":50.8241697,"lng":16.4285465,"min":19},
+  {"name":"Witków","lat":50.79786679999999,"lng":16.1299111,"min":21},
+  {"name":"Walim","lat":50.6974362,"lng":16.4422202,"min":30},
+  {"name":"Zagórze Śląskie","lat":50.758871,"lng":16.4013558,"min":24},
+  {"name":"Zawiszów","lat":50.8703999,"lng":16.4875682,"min":25}
 ];
 
-// ================= LOGIKA =================
 let markers = [];
 
-function distance(a,b){
-  return Math.hypot(a.lat-b.lat, a.lng-b.lng);
-}
+function createMarkers() {
+  markers.forEach(m => m.setMap(null));
+  markers = [];
 
-function direction(loc){
-  const dx = loc.lng - startPoint.lng;
-  const dy = loc.lat - startPoint.lat;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "prawo" : "lewo";
-  return dy > 0 ? "gora" : "dol";
-}
+  const input = document.getElementById('letterInput').value
+    .toUpperCase()
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s);
 
-function generateRoutes(letters){
-  const pools = letters.map(l =>
-    locations.filter(x => x.name[0].toUpperCase() === l)
-  );
-
-  let combos = [];
-  function build(idx, cur){
-    if(idx === pools.length){ combos.push([...cur]); return; }
-    pools[idx].forEach(x => { cur.push(x); build(idx+1,cur); cur.pop(); });
-  }
-  build(0,[]);
-
-  combos = combos.map(c => {
-    let best = Infinity, order = c;
-    for(let i=0;i<c.length;i++){
-      const perm = [...c];
-      if(i>0)[perm[0],perm[i]]=[perm[i],perm[0]];
-      let d=0;
-      for(let j=0;j<perm.length-1;j++) d+=distance(perm[j],perm[j+1]);
-      if(d<best){best=d;order=perm;}
-    }
-    return {order, score: best};
-  });
-
-  combos.sort((a,b)=>a.score-b.score);
-  return combos;
-}
-
-document.getElementById("showRoute").onclick = () => {
-  markers.forEach(m=>m.setMap(null));
-  markers=[];
-
-  const letters = document.getElementById("letterInput").value
-    .toUpperCase().split(",").map(x=>x.trim()).filter(Boolean);
-
-  if(!letters.length) return;
-
-  const routes = generateRoutes(letters);
-  const best = routes[0];
-
-  let html = "🟢 Najlepsza trasa:<br>"+best.order.map(x=>x.name).join(" → ");
-
-  const usedDirs = new Set();
-  usedDirs.add(direction(best.order[0]));
-
-  html += "<br><br>Inne możliwe trasy:<br>";
-
-  for(const r of routes){
-    const dir = direction(r.order[0]);
-    if(usedDirs.has(dir)) continue;
-    usedDirs.add(dir);
-    html += `(${dir}) ${r.order.map(x=>x.name).join(" → ")}<br>`;
-    if(usedDirs.size===4) break;
-  }
-
-  document.getElementById("bestRouteContainer").innerHTML = html;
-
-  locations.forEach(loc=>{
-    const letter = loc.name[0].toUpperCase();
-    if(!letters.includes(letter)) return;
-    const isBest = best.order.some(x=>x.name===loc.name);
-    const marker = new google.maps.Marker({
-      position: loc,
-      map,
-      label: letter,
-      icon:{
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 14,
-        fillColor: isBest ? "green" : "red",
-        fillOpacity: 1,
-        strokeColor:"white",
-        strokeWeight:2
+  const minByLetter = {};
+  if(input.length) {
+    input.forEach(letter => {
+      const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
+      if(filtered.length) {
+        minByLetter[letter] = Math.min(...filtered.map(l => l.min));
       }
     });
+  }
+
+  locations.forEach(loc => {
+    const firstLetter = loc.name.charAt(0).toUpperCase();
+    if(input.length && !input.includes(firstLetter)) return;
+
+    const isMin = minByLetter[firstLetter] !== undefined && loc.min === minByLetter[firstLetter];
+
+    const marker = new google.maps.Marker({
+      position: {lat: loc.lat, lng: loc.lng},
+      map: map,
+      label: { text: firstLetter, color: "white", fontWeight: "bold" },
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 16,
+        fillColor: isMin ? "green" : "red",
+        fillOpacity: 1,
+        strokeWeight: 2,
+        strokeColor: "white"
+      }
+    });
+
+    const infowindow = new google.maps.InfoWindow({
+      content: `<b>${loc.name}</b><br>${loc.min} min`
+    });
+
+    marker.addListener('click', () => infowindow.open(map, marker));
     markers.push(marker);
   });
-};
+}
 
-document.getElementById("randomLetters").onclick = ()=>{
-  const count = parseInt(randomCount.value)||1;
-  const letters=[...new Set(locations.map(x=>x.name[0].toUpperCase()))];
-  randomCount.value="";
-  letterInput.value = letters.sort(()=>0.5-Math.random()).slice(0,count).join(",");
-};
+createMarkers();
+map.setCenter(startPoint);
+document.getElementById('letterInput').addEventListener('input', createMarkers);
+
+document.getElementById('showRoute').addEventListener('click', () => {
+  const input = document.getElementById('letterInput').value
+    .toUpperCase()
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s);
+
+  if (!input.length) {
+    document.getElementById('bestRouteContainer').innerText = "Wpisz litery w polu powyżej!";
+    return;
+  }
+
+  const minByLetter = {};
+  input.forEach(letter => {
+    const filtered = locations.filter(loc => loc.name.charAt(0).toUpperCase() === letter);
+    if (filtered.length) {
+      const minValue = Math.min(...filtered.map(l => l.min));
+      const closestLoc = filtered.find(l => l.min === minValue);
+      minByLetter[letter] = closestLoc.name;
+    }
+  });
+
+  const resultText = "Najbliższe miejscowości: ";
+  const formattedLocations = Object.values(minByLetter).map(name => `<b>${name.charAt(0)}</b>${name.slice(1)}`);
+  document.getElementById('bestRouteContainer').innerHTML = `<b>${resultText}</b> ${formattedLocations.join(", ")}`;
+});
+
+document.getElementById('randomLetters').addEventListener('click', () => {
+  const count = parseInt(document.getElementById('randomCount').value) || 1;
+  const availableLetters = [...new Set(locations.map(l => l.name.charAt(0).toUpperCase()))];
+  const shuffled = availableLetters.sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, count);
+
+  document.getElementById('letterInput').value = selected.join(',');
+  createMarkers();
+});
 </script>
+
 </body>
 </html>
